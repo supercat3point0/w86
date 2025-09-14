@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 project(w86 C)
 
 if (NOT EMSCRIPTEN)
-  message(FATAL_ERROR "This project has to be built with Emscripten!")
+  message(FATAL_ERROR "This project must be built with Emscripten!")
 endif()
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

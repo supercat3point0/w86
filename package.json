@@ -15,7 +15,7 @@
   "type": "module",
   "scripts": {
     "configure": "emcmake cmake -B build",
-    "build": "cmake --build build && npx tsc",
+    "build": "cmake --build build && tsc",
     "postbuild": "cp build/w86.wasm dist && cp build/w86.js dist && cp src/index.xhtml dist"
   },
   "devDependencies": {

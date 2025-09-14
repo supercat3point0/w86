@@ -1,0 +1,25 @@
+{
+  "name": "w86",
+  "version": "1.0.0",
+  "description": "Online 8086 emulator powered by WebAssembly",
+  "homepage": "https://supercat3point0.github.io/w86",
+  "bugs": {
+    "url": "https://github.com/supercat3point0/w86/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supercat3point0/w86.git"
+  },
+  "license": "GPL-3.0-or-later",
+  "author": "Bennett Jann",
+  "type": "module",
+  "scripts": {
+    "configure": "emcmake cmake -B build",
+    "build": "cmake --build build && npx tsc",
+    "postbuild": "cp build/w86.wasm dist && cp build/w86.js dist && cp src/index.xhtml dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "private": true
+}

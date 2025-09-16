@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <emscripten.h>
 #include <emscripten/bind.h>
 
 #include "w86.h"
@@ -13,5 +12,5 @@ EMSCRIPTEN_BINDINGS(w86) {
     .property("x", &multiplication::x)
     .property("y", &multiplication::y)
     .property("z", &multiplication::z);
-  function("multiply", &multiply, allow_raw_pointers());
+  function("multiply", multiply, allow_raw_pointers());
 }

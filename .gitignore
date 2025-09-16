@@ -161,3 +161,4 @@ vite.config.ts.timestamp-*
 .vscode/
 build/
 dist/
+gh-pages/

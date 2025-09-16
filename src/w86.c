@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <emscripten.h>
+#include "w86.h"
 
-int EMSCRIPTEN_KEEPALIVE multiply (int x, int y) {
-  return x * y;
+struct multiplication* multiply (struct multiplication* m) {
+  m->z = m->x * m->y;
+  return m;
 }

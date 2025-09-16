@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(w86 C)
+project(w86 C CXX)
 
 if (NOT EMSCRIPTEN)
   message(FATAL_ERROR "This project must be built with Emscripten!")
@@ -13,8 +13,13 @@ endif()
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(w86)
+
+target_link_libraries(w86 "embind")
 
 target_compile_options(w86 PRIVATE "-Wall" "-Wextra" "-Wpedantic")
 target_link_options(w86 PRIVATE "-sEXPORT_ES6" "--emit-tsd" "w86.d.ts")

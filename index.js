@@ -6,5 +6,10 @@ document.getElementById("calculate")?.addEventListener("click", () => {
     const x = calculation.elements.namedItem("x");
     const y = calculation.elements.namedItem("y");
     const z = calculation.elements.namedItem("z");
-    z.value = String(w86._multiply(x.valueAsNumber, y.valueAsNumber));
+    const m = new w86.Multiplication();
+    m.x = x.valueAsNumber;
+    m.y = y.valueAsNumber;
+    w86.multiply(m);
+    z.value = String(m.z);
+    m.delete();
 });

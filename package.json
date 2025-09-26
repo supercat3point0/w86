@@ -16,8 +16,8 @@
   "scripts": {
     "configure": "emcmake cmake -B build",
     "build": "cmake --build build && tsc",
-    "postbuild": "cp build/w86.wasm build/w86.js src/index.xhtml dist",
-    "gh-pages": "cp dist/w86.wasm dist/w86.js dist/index.js src/index.xhtml gh-pages"
+    "postbuild": "cp build/w86.wasm build/w86.js src/index.css src/index.xhtml dist",
+    "gh-pages": "cp dist/w86.wasm dist/w86.js dist/index.js dist/index.css dist/index.xhtml gh-pages"
   },
   "devDependencies": {
     "typescript": "^5.9.2"

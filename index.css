@@ -1,0 +1,41 @@
+.registers {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  gap: 5px;
+}
+
+.ipflags {
+  display: grid;
+  grid-template-rows: repeat(2, max-content);
+  gap: 5px;
+}
+
+.registers > *,
+.ipflags > * {
+  width: max-content;
+  height: max-content;
+}
+
+.registers td {
+  text-align: center;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.flags td {
+  width: 15px;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid;
+  padding: 5px;
+}
+
+body {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+}

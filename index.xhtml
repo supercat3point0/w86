@@ -5,9 +5,137 @@
   <head>
     <title>w86</title>
     <meta encoding="UTF-8" />
+    <link rel="stylesheet" href="index.css" />
     <script src="index.js" type="module"></script>
   </head>
   <body>
+    <div class="registers">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" colspan="2">General Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">AX</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">BX</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">CX</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">DX</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">SI</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">DI</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">SP</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">BP</th>
+            <td>0000</td>
+          </tr>
+        </tbody>
+      </table>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col" colspan="2">Segment Selectors</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">CS</th>
+            <td>ffff</td>
+          </tr>
+          <tr>
+            <th scope="row">DS</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">SS</th>
+            <td>0000</td>
+          </tr>
+          <tr>
+            <th scope="row">ES</th>
+            <td>0000</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="ipflags">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Instruction Pointer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0000</td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="flags">
+          <thead>
+            <tr>
+              <th scope="col" colspan="16">Flags</th>
+            </tr>
+            <tr>
+              <th scope="col">-</th>
+              <th scope="col">-</th>
+              <th scope="col">-</th>
+              <th scope="col">-</th>
+              <th scope="col">O</th>
+              <th scope="col">D</th>
+              <th scope="col">I</th>
+              <th scope="col">T</th>
+              <th scope="col">S</th>
+              <th scope="col">Z</th>
+              <th scope="col">-</th>
+              <th scope="col">A</th>
+              <th scope="col">-</th>
+              <th scope="col">P</th>
+              <th scope="col">-</th>
+              <th scope="col">C</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <form id="calculation">
       <input type="number" name="x" value="0" /> *
       <input type="number" name="y" value="0" /> =

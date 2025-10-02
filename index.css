@@ -1,28 +1,27 @@
-.registers {
-  display: grid;
-  grid-template-columns: repeat(3, max-content);
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+
+#emulator,
+#ipflags,
+#memory {
+  display: flex;
+  flex-direction: column;
   gap: 5px;
 }
 
-.ipflags {
-  display: grid;
-  grid-template-rows: repeat(2, max-content);
+#emulator {
+  gap: 10px;
+}
+
+#registers {
+  display: flex;
   gap: 5px;
 }
 
-.registers > *,
-.ipflags > * {
+#registers > *,
+#ipflags > *,
+#memory > * {
   width: max-content;
   height: max-content;
-}
-
-.registers td {
-  text-align: center;
-  font-family: "Courier New", Courier, monospace;
-}
-
-.flags td {
-  width: 15px;
 }
 
 table {
@@ -31,8 +30,37 @@ table {
 
 th,
 td {
+  text-align: center;
   border: 1px solid;
   padding: 5px;
+}
+
+th {
+  font-weight: bold;
+}
+
+table#memory-view {
+  border: 1px solid;
+
+  th,
+  td {
+    border-top: none;
+    border-bottom: none;
+  }
+
+  th {
+    font-family: "Courier New", Courier, monospace;
+  }
+
+  thead th {
+    border-bottom: 1px solid;
+  }
+}
+
+input[type="text"] {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 100%;
+  text-align: right;
 }
 
 body {

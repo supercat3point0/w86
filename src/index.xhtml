@@ -9,139 +9,225 @@
     <script src="index.js" type="module"></script>
   </head>
   <body>
-    <div class="registers">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col" colspan="2">General Purpose</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">AX</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">BX</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">CX</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">DX</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">SI</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">DI</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">SP</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">BP</th>
-            <td>0000</td>
-          </tr>
-        </tbody>
-      </table>
-      <table>
-        <thead>
-          <tr>
-            <th scope="col" colspan="2">Segment Selectors</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">CS</th>
-            <td>ffff</td>
-          </tr>
-          <tr>
-            <th scope="row">DS</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">SS</th>
-            <td>0000</td>
-          </tr>
-          <tr>
-            <th scope="row">ES</th>
-            <td>0000</td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="ipflags">
+    <form id="emulator">
+      <div>
+        <button type="button">Run</button>
+        <button type="button">Step</button>
+        <button type="button">Reset</button>
+        <input type="file" name="file" />
+      </div>
+      <div id="registers">
         <table>
           <thead>
             <tr>
-              <th scope="col">Instruction Pointer</th>
+              <th scope="col" colspan="2">General Purpose</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>0000</td>
+              <th scope="row">AX</th>
+              <td><input type="text" name="ax" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">BX</th>
+              <td><input type="text" name="bx" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">CX</th>
+              <td><input type="text" name="cx" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">DX</th>
+              <td><input type="text" name="dx" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">SI</th>
+              <td><input type="text" name="si" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">DI</th>
+              <td><input type="text" name="di" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">SP</th>
+              <td><input type="text" name="sp" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">BP</th>
+              <td><input type="text" name="bp" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
             </tr>
           </tbody>
         </table>
-        <table class="flags">
+        <table>
           <thead>
             <tr>
-              <th scope="col" colspan="16">Flags</th>
-            </tr>
-            <tr>
-              <th scope="col">-</th>
-              <th scope="col">-</th>
-              <th scope="col">-</th>
-              <th scope="col">-</th>
-              <th scope="col">O</th>
-              <th scope="col">D</th>
-              <th scope="col">I</th>
-              <th scope="col">T</th>
-              <th scope="col">S</th>
-              <th scope="col">Z</th>
-              <th scope="col">-</th>
-              <th scope="col">A</th>
-              <th scope="col">-</th>
-              <th scope="col">P</th>
-              <th scope="col">-</th>
-              <th scope="col">C</th>
+              <th scope="col" colspan="2">Segment Selectors</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
+              <th scope="row">CS</th>
+              <td><input type="text" name="cs" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="FFFF" /></td>
+            </tr>
+            <tr>
+              <th scope="row">DS</th>
+              <td><input type="text" name="ds" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">SS</th>
+              <td><input type="text" name="ss" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">ES</th>
+              <td><input type="text" name="es" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="ipflags">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Instruction Pointer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="text" name="ip" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+              </tr>
+            </tbody>
+          </table>
+          <table id="flags">
+            <thead>
+              <tr>
+                <th scope="col" colspan="16">Flags</th>
+              </tr>
+              <tr>
+                <th scope="col">-</th>
+                <th scope="col">-</th>
+                <th scope="col">-</th>
+                <th scope="col">-</th>
+                <th scope="col">O</th>
+                <th scope="col">D</th>
+                <th scope="col">I</th>
+                <th scope="col">T</th>
+                <th scope="col">S</th>
+                <th scope="col">Z</th>
+                <th scope="col">-</th>
+                <th scope="col">A</th>
+                <th scope="col">-</th>
+                <th scope="col">P</th>
+                <th scope="col">-</th>
+                <th scope="col">C</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" name="flags15" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags14" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags13" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags12" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags11" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags10" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags9" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags8" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags7" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags6" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags5" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags4" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags3" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags2" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags1" disabled="" autocomplete="off" /></td>
+                <td><input type="checkbox" name="flags0" disabled="" autocomplete="off" /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="memory">
+        <div>
+          <label>
+            Base address:
+            <input type="text" name="base-address" autocomplete="off" required="" size="5" maxlength="5" pattern="[\dA-Fa-f]*" placeholder="00000" value="00000" />
+          </label>
+          <button type="button" name="first-address">&lt;&lt;</button>
+          <button type="button" name="prev-address">&lt;</button>
+          <button type="button" name="next-address">&gt;</button>
+          <button type="button" name="last-address">&gt;&gt;</button>
+        </div>
+        <table id="memory-view">
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col">0</th>
+              <th scope="col">1</th>
+              <th scope="col">2</th>
+              <th scope="col">3</th>
+              <th scope="col">4</th>
+              <th scope="col">5</th>
+              <th scope="col">6</th>
+              <th scope="col">7</th>
+              <th scope="col">8</th>
+              <th scope="col">9</th>
+              <th scope="col">A</th>
+              <th scope="col">B</th>
+              <th scope="col">C</th>
+              <th scope="col">D</th>
+              <th scope="col">E</th>
+              <th scope="col">F</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">00000</th>
+            </tr>
+            <tr>
+              <th scope="row">00010</th>
+            </tr>
+            <tr>
+              <th scope="row">00020</th>
+            </tr>
+            <tr>
+              <th scope="row">00030</th>
+            </tr>
+            <tr>
+              <th scope="row">00040</th>
+            </tr>
+            <tr>
+              <th scope="row">00050</th>
+            </tr>
+            <tr>
+              <th scope="row">00060</th>
+            </tr>
+            <tr>
+              <th scope="row">00070</th>
+            </tr>
+            <tr>
+              <th scope="row">00080</th>
+            </tr>
+            <tr>
+              <th scope="row">00090</th>
+            </tr>
+            <tr>
+              <th scope="row">000A0</th>
+            </tr>
+            <tr>
+              <th scope="row">000B0</th>
+            </tr>
+            <tr>
+              <th scope="row">000C0</th>
+            </tr>
+            <tr>
+              <th scope="row">000D0</th>
+            </tr>
+            <tr>
+              <th scope="row">000E0</th>
+            </tr>
+            <tr>
+              <th scope="row">000F0</th>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
-    <form id="calculation">
-      <input type="number" name="x" value="0" /> *
-      <input type="number" name="y" value="0" /> =
-      <output name="z" for="x y">0</output>
-      <br />
-      <button type="button" id="calculate">Calculate</button>
     </form>
   </body>
 </html>

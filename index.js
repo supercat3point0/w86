@@ -6,32 +6,37 @@ function updateAddress(a) {
     if (a > 0xfff00)
         a = 0xfff00;
     a -= a % 16;
-    emulator.elements.namedItem("base-address").value = a.toString(16).toUpperCase().padStart(5, "0");
+    emulator.form.elements.namedItem("base-address").value = a.toString(16).toUpperCase().padStart(5, "0");
     const rows = document.getElementById("memory-view")?.querySelectorAll("tbody tr");
     for (let i = 0; i < 16; i++) {
         const row = rows.item(i);
         row.querySelector("th").innerHTML = (a + i * 0x10).toString(16).toUpperCase().padStart(5, "0");
     }
-    address = a;
+    emulator.baseAddress = a;
 }
 const w86 = await W86();
-const emulator = document.getElementById("emulator");
-let address = 0x00000;
-emulator.elements.namedItem("base-address").addEventListener("change", (event) => {
-    const e = event.currentTarget;
-    let a;
-    if (!e.checkValidity()) {
-        a = 0x00000;
-    }
-    else {
-        a = parseInt(e.value, 16);
-    }
-    updateAddress(a);
-});
-emulator.elements.namedItem("first-address").addEventListener("click", () => updateAddress(0x00000));
-emulator.elements.namedItem("prev-address").addEventListener("click", () => updateAddress(address - 0x100));
-emulator.elements.namedItem("next-address").addEventListener("click", () => updateAddress(address + 0x100));
-emulator.elements.namedItem("last-address").addEventListener("click", () => updateAddress(0xfff00));
+const emulator = {
+    state: new w86.W86CPUState(),
+    form: document.getElementById("emulator"),
+    baseAddress: 0x00000
+};
+emulator.state.reg = {
+    ax: 0x0000,
+    bx: 0x0000,
+    cx: 0x0000,
+    dx: 0x0000,
+    si: 0x0000,
+    di: 0x0000,
+    sp: 0x0000,
+    bp: 0x0000,
+    cs: 0xffff,
+    ds: 0x0000,
+    es: 0x0000,
+    ss: 0x0000,
+    ip: 0x0000,
+    flags: 0x0000
+};
+emulator.state.mem = w86._malloc(1048576);
 {
     const rows = document.getElementById("memory-view")?.querySelectorAll("tbody tr");
     const byte = document.createElement("input");
@@ -52,18 +57,19 @@ emulator.elements.namedItem("last-address").addEventListener("click", () => upda
         }
     }
 }
-/*document.getElementById("calculate")?.addEventListener("click", (): void => {
-  const calculation: HTMLFormElement = <HTMLFormElement> document.getElementById("calculation");
-  const x: HTMLInputElement = <HTMLInputElement> calculation.elements.namedItem("x");
-  const y: HTMLInputElement = <HTMLInputElement> calculation.elements.namedItem("y");
-  const z: HTMLOutputElement = <HTMLOutputElement> calculation.elements.namedItem("z");
-
-  const m: Multiplication = new w86.Multiplication();
-  m.x = x.valueAsNumber;
-  m.y = y.valueAsNumber;
-  w86.multiply(m);
-
-  z.value = String(m.z);
-
-  m.delete();
-});*/
+emulator.form.elements.namedItem("step").addEventListener("click", () => w86.w86CPUStep(emulator.state));
+emulator.form.elements.namedItem("base-address").addEventListener("change", (event) => {
+    const e = event.currentTarget;
+    let a;
+    if (!e.checkValidity()) {
+        a = 0x00000;
+    }
+    else {
+        a = parseInt(e.value, 16);
+    }
+    updateAddress(a);
+});
+emulator.form.elements.namedItem("first-address").addEventListener("click", () => updateAddress(0x00000));
+emulator.form.elements.namedItem("prev-address").addEventListener("click", () => updateAddress(emulator.baseAddress - 0x100));
+emulator.form.elements.namedItem("next-address").addEventListener("click", () => updateAddress(emulator.baseAddress + 0x100));
+emulator.form.elements.namedItem("last-address").addEventListener("click", () => updateAddress(0xfff00));

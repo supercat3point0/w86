@@ -11,9 +11,9 @@
   <body>
     <form id="emulator">
       <div>
-        <button type="button">Run</button>
-        <button type="button">Step</button>
-        <button type="button">Reset</button>
+        <button type="button" name="run">Run</button>
+        <button type="button" name="step">Step</button>
+        <button type="button" name="reset">Reset</button>
         <input type="file" name="file" />
       </div>
       <div id="registers">
@@ -74,12 +74,12 @@
               <td><input type="text" name="ds" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
             </tr>
             <tr>
-              <th scope="row">SS</th>
-              <td><input type="text" name="ss" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
-            </tr>
-            <tr>
               <th scope="row">ES</th>
               <td><input type="text" name="es" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
+            </tr>
+            <tr>
+              <th scope="row">SS</th>
+              <td><input type="text" name="ss" disabled="" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" /></td>
             </tr>
           </tbody>
         </table>

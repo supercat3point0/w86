@@ -22,7 +22,7 @@ add_executable(w86)
 target_link_libraries(w86 "embind")
 
 target_compile_options(w86 PRIVATE "-Wall" "-Wextra" "-Wpedantic")
-target_link_options(w86 PRIVATE "-sEXPORT_ES6" "--emit-tsd" "w86.d.ts")
+target_link_options(w86 PRIVATE "-sEXPORTED_FUNCTIONS=_malloc" "-sEXPORTED_RUNTIME_METHODS=HEAPU8" "-sEXPORT_ES6" "--emit-tsd" "w86.d.ts")
 target_compile_options(w86 PRIVATE "$<$<CONFIG:Debug>:-g3;-Og>")
 target_link_options(w86 PRIVATE "$<$<CONFIG:Debug>:-g3;-Og>")
 target_compile_options(w86 PRIVATE "$<$<CONFIG:Release>:-O2;-DNDEBUG>")

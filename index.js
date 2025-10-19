@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import W86, {} from "./w86.js";
-function updateAddress(a) {
+function updateBaseAddress(a) {
     if (a < 0x00000)
         a = 0x00000;
     if (a > 0xfff00)
         a = 0xfff00;
     a -= a % 16;
-    emulator.form.elements.namedItem("base-address").value = a.toString(16).toUpperCase().padStart(5, "0");
+    emulator.ui.elements.namedItem("base-address").value = a.toString(16).toUpperCase().padStart(5, "0");
     const rows = document.getElementById("memory-view")?.querySelectorAll("tbody tr");
     for (let i = 0; i < 16; i++) {
         const row = rows.item(i);
@@ -14,29 +14,53 @@ function updateAddress(a) {
     }
     emulator.baseAddress = a;
 }
-const w86 = await W86();
-const emulator = {
-    state: new w86.W86CPUState(),
-    form: document.getElementById("emulator"),
-    baseAddress: 0x00000
-};
-emulator.state.reg = {
-    ax: 0x0000,
-    bx: 0x0000,
-    cx: 0x0000,
-    dx: 0x0000,
-    si: 0x0000,
-    di: 0x0000,
-    sp: 0x0000,
-    bp: 0x0000,
-    cs: 0xffff,
-    ds: 0x0000,
-    es: 0x0000,
-    ss: 0x0000,
-    ip: 0x0000,
-    flags: 0x0000
-};
-emulator.state.mem = w86._malloc(1048576);
+function updateMemoryView() {
+    const rows = document.getElementById("memory-view")?.querySelectorAll("tbody tr");
+    for (let i = 0; i < 16; i++) {
+        const cells = rows.item(i).querySelectorAll("td input");
+        for (let j = 0; j < 16; j++) {
+            const cell = cells.item(j);
+            cell.value = w86.HEAPU8[emulator.state.memory + emulator.baseAddress + i * 16 + j].toString(16).toUpperCase().padStart(2, "0");
+        }
+    }
+}
+function updateDisplay() {
+    emulator.ui.elements.namedItem("ax").value = emulator.state.registers.ax.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("bx").value = emulator.state.registers.bx.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("cx").value = emulator.state.registers.cx.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("dx").value = emulator.state.registers.dx.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("si").value = emulator.state.registers.si.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("di").value = emulator.state.registers.di.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("sp").value = emulator.state.registers.sp.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("bp").value = emulator.state.registers.bp.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("cs").value = emulator.state.registers.cs.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("ds").value = emulator.state.registers.ds.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("es").value = emulator.state.registers.es.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("ss").value = emulator.state.registers.ss.toString(16).toUpperCase().padStart(4, "0");
+    emulator.ui.elements.namedItem("ip").value = emulator.state.registers.ip.toString(16).toUpperCase().padStart(4, "0");
+    for (let i = 0; i < 16; i++)
+        emulator.ui.elements.namedItem("flags" + i.toString()).checked = (emulator.state.registers.flags >> i & 1) !== 0;
+    updateMemoryView();
+}
+function resetEmulator() {
+    emulator.state.registers = {
+        ax: 0x0000,
+        bx: 0x0000,
+        cx: 0x0000,
+        dx: 0x0000,
+        si: 0x0000,
+        di: 0x0000,
+        sp: 0x0000,
+        bp: 0x0000,
+        cs: 0xffff,
+        ds: 0x0000,
+        es: 0x0000,
+        ss: 0x0000,
+        ip: 0x0000,
+        flags: 0x0000
+    };
+    w86.HEAPU8.subarray(emulator.state.memory, emulator.state.memory + emulator.memorySize).set(new Uint8Array(emulator.rom));
+}
 {
     const rows = document.getElementById("memory-view")?.querySelectorAll("tbody tr");
     const byte = document.createElement("input");
@@ -57,8 +81,49 @@ emulator.state.mem = w86._malloc(1048576);
         }
     }
 }
-emulator.form.elements.namedItem("step").addEventListener("click", () => w86.w86CPUStep(emulator.state));
-emulator.form.elements.namedItem("base-address").addEventListener("change", (event) => {
+const w86 = await W86();
+const emulator = {
+    state: new w86.W86CpuState(),
+    memorySize: 1048576,
+    rom: new ArrayBuffer(1048576),
+    baseAddress: 0x00000,
+    ui: document.getElementById("emulator")
+};
+emulator.state.registers = {
+    ax: 0x0000,
+    bx: 0x0000,
+    cx: 0x0000,
+    dx: 0x0000,
+    si: 0x0000,
+    di: 0x0000,
+    sp: 0x0000,
+    bp: 0x0000,
+    cs: 0xffff,
+    ds: 0x0000,
+    es: 0x0000,
+    ss: 0x0000,
+    ip: 0x0000,
+    flags: 0x0000
+};
+emulator.state.memory = w86._malloc(emulator.memorySize);
+w86.HEAPU8.subarray(emulator.state.memory, emulator.state.memory + emulator.memorySize).fill(0);
+emulator.ui.elements.namedItem("step").addEventListener("click", () => {
+    w86.w86CpuStep(emulator.state);
+    updateDisplay();
+});
+emulator.ui.elements.namedItem("reset").addEventListener("click", () => {
+    resetEmulator();
+    updateDisplay();
+});
+emulator.ui.elements.namedItem("rom").addEventListener("change", (event) => {
+    event.currentTarget.files?.item(0)?.arrayBuffer().then((buf) => {
+        const view = new Uint8Array(emulator.rom);
+        view.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
+        resetEmulator();
+        updateDisplay();
+    });
+});
+emulator.ui.elements.namedItem("base-address").addEventListener("change", (event) => {
     const e = event.currentTarget;
     let a;
     if (!e.checkValidity()) {
@@ -67,9 +132,22 @@ emulator.form.elements.namedItem("base-address").addEventListener("change", (eve
     else {
         a = parseInt(e.value, 16);
     }
-    updateAddress(a);
+    updateBaseAddress(a);
+    updateMemoryView();
 });
-emulator.form.elements.namedItem("first-address").addEventListener("click", () => updateAddress(0x00000));
-emulator.form.elements.namedItem("prev-address").addEventListener("click", () => updateAddress(emulator.baseAddress - 0x100));
-emulator.form.elements.namedItem("next-address").addEventListener("click", () => updateAddress(emulator.baseAddress + 0x100));
-emulator.form.elements.namedItem("last-address").addEventListener("click", () => updateAddress(0xfff00));
+emulator.ui.elements.namedItem("first-address").addEventListener("click", () => {
+    updateBaseAddress(0x00000);
+    updateMemoryView();
+});
+emulator.ui.elements.namedItem("prev-address").addEventListener("click", () => {
+    updateBaseAddress(emulator.baseAddress - 0x100);
+    updateMemoryView();
+});
+emulator.ui.elements.namedItem("next-address").addEventListener("click", () => {
+    updateBaseAddress(emulator.baseAddress + 0x100);
+    updateMemoryView();
+});
+emulator.ui.elements.namedItem("last-address").addEventListener("click", () => {
+    updateBaseAddress(0xfff00);
+    updateMemoryView();
+});

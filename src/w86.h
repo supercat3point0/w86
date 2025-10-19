@@ -10,26 +10,26 @@ extern "C" {
 #include <stdint.h>
 
 struct w86_cpu_state {
-  struct w86_reg_file {
-    int16_t ax;
-    int16_t bx;
-    int16_t cx;
-    int16_t dx;
-    int16_t si;
-    int16_t di;
-    int16_t sp;
-    int16_t bp;
-    int16_t cs;
-    int16_t ds;
-    int16_t es;
-    int16_t ss;
-    int16_t ip;
-    int16_t flags;
-  } reg;
+  struct w86_register_file {
+    uint16_t ax;
+    uint16_t bx;
+    uint16_t cx;
+    uint16_t dx;
+    uint16_t si;
+    uint16_t di;
+    uint16_t sp;
+    uint16_t bp;
+    uint16_t cs;
+    uint16_t ds;
+    uint16_t es;
+    uint16_t ss;
+    uint16_t ip;
+    uint16_t flags;
+  } registers;
 #ifdef EMBIND // embind doesn't support pointers to primitive types, so we have cheat a little
-  intptr_t mem;
+  intptr_t memory;
 #else
-  uint8_t* mem;
+  uint8_t* memory;
 #endif
 };
 

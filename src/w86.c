@@ -20,21 +20,21 @@ void w86_cpu_step(struct w86_cpu_state* state) {
     "ss: %.4hx\n"
     "ip: %.4hx\n"
     "flags: %.4hx\n"
-    "mem[0]: %.2hhx\n",
-    state->reg.ax,
-    state->reg.bx,
-    state->reg.cx,
-    state->reg.dx,
-    state->reg.si,
-    state->reg.di,
-    state->reg.sp,
-    state->reg.bp,
-    state->reg.cs,
-    state->reg.ds,
-    state->reg.es,
-    state->reg.ss,
-    state->reg.ip,
-    state->reg.flags,
-    state->mem[0]
+    "memory[0x00400]: %.2hhx\n",
+    state->registers.ax,
+    state->registers.bx,
+    state->registers.cx,
+    state->registers.dx,
+    state->registers.si,
+    state->registers.di,
+    state->registers.sp,
+    state->registers.bp,
+    state->registers.cs,
+    state->registers.ds,
+    state->registers.es,
+    state->registers.ss,
+    state->registers.ip,
+    state->registers.flags,
+    state->memory[0x00400]
   );
 }

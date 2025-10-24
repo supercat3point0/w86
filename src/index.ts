@@ -48,6 +48,21 @@ function updateDisplay(): void {
   updateMemoryView();
 }
 
+function stepEmulator(): void {
+  switch (w86.w86CpuStep(emulator.state)) {
+  case w86.W86Status.SUCCESS:
+    break;
+  case w86.W86Status.UNDEFINED_OPCODE:
+    console.error(`Undefined opcode: 0x${w86.HEAPU8[emulator.state.memory + ((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)].toString(16).toUpperCase().padStart(2, "0")}`);
+    break;
+  case w86.W86Status.UNIMPLEMENTED_OPCODE:
+    console.error(`Unimplemented opcode: 0x${w86.HEAPU8[emulator.state.memory + ((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)].toString(16).toUpperCase().padStart(2, "0")}`);
+    break;
+  default:
+    console.error("Unknown error");
+  }
+}
+
 function resetEmulator(): void {
   emulator.state.registers = {
     ax: 0x0000,
@@ -124,7 +139,7 @@ emulator.state.memory = w86._malloc(emulator.memorySize);
 w86.HEAPU8.subarray(emulator.state.memory, emulator.state.memory + emulator.memorySize).fill(0);
 
 (<Element> emulator.ui.elements.namedItem("step")).addEventListener("click", (): void => {
-  w86.w86CpuStep(emulator.state);
+  stepEmulator();
   updateDisplay();
 });
 

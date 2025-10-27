@@ -9,7 +9,7 @@ function updateBaseAddress(a: number): void {
 
   (<HTMLInputElement> emulator.ui.elements.namedItem("base-address")).value = a.toString(16).toUpperCase().padStart(5, "0");
 
-  const rows: NodeList = document.getElementById("memory-view")?.querySelectorAll("tbody tr")!;
+  const rows: NodeList = document.getElementById("memory-view")!.querySelectorAll("tbody tr");
   for (let i: number = 0; i < 16; i++) {
     const row: Element = <Element> rows.item(i);
     row.querySelector("th")!.innerHTML = (a + i * 0x10).toString(16).toUpperCase().padStart(5, "0");
@@ -19,12 +19,12 @@ function updateBaseAddress(a: number): void {
 }
 
 function updateMemoryView(): void {
-  const rows: NodeList = document.getElementById("memory-view")?.querySelectorAll("tbody tr")!;
+  const rows: NodeList = document.getElementById("memory-view")!.querySelectorAll("tbody tr");
   for (let i: number = 0; i < 16; i++) {
     const cells: NodeList = (<Element> rows.item(i)).querySelectorAll("td input");
     for (let j: number = 0; j < 16; j++) {
       const cell: HTMLInputElement = <HTMLInputElement> cells.item(j);
-      cell.value = w86.HEAPU8[emulator.state.memory + emulator.baseAddress + i * 16 + j].toString(16).toUpperCase().padStart(2, "0");
+      cell.value = emulator.memory[emulator.baseAddress + i * 16 + j]!.toString(16).toUpperCase().padStart(2, "0");
     }
   }
 }
@@ -53,10 +53,10 @@ function stepEmulator(): void {
   case w86.W86Status.SUCCESS:
     break;
   case w86.W86Status.UNDEFINED_OPCODE:
-    console.error(`Undefined opcode: 0x${w86.HEAPU8[emulator.state.memory + ((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)].toString(16).toUpperCase().padStart(2, "0")}`);
+    console.error(`Undefined opcode: 0x${emulator.memory[((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)]!.toString(16).toUpperCase().padStart(2, "0")}`);
     break;
   case w86.W86Status.UNIMPLEMENTED_OPCODE:
-    console.error(`Unimplemented opcode: 0x${w86.HEAPU8[emulator.state.memory + ((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)].toString(16).toUpperCase().padStart(2, "0")}`);
+    console.error(`Unimplemented opcode: 0x${emulator.memory[((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)]!.toString(16).toUpperCase().padStart(2, "0")}`);
     break;
   default:
     console.error("Unknown error");
@@ -80,11 +80,11 @@ function resetEmulator(): void {
     ip: 0x0000,
     flags: 0x0000
   };
-  w86.HEAPU8.subarray(emulator.state.memory, emulator.state.memory + emulator.memorySize).set(new Uint8Array(emulator.rom));
+  emulator.memory.set(emulator.rom);
 }
 
 {
-  const rows: NodeList = document.getElementById("memory-view")?.querySelectorAll("tbody tr")!;
+  const rows: NodeList = document.getElementById("memory-view")!.querySelectorAll("tbody tr");
   const byte: HTMLInputElement = document.createElement("input");
   byte.type = "text";
   byte.disabled = true;
@@ -109,13 +109,17 @@ const w86: MainModule = await W86();
 const emulator: {
   readonly state: W86CpuState;
   readonly memorySize: number;
-  readonly rom: ArrayBuffer;
+  memory: Uint8Array;
+  readonly _rom: ArrayBuffer;
+  rom: Uint8Array;
   baseAddress: number;
   readonly ui: HTMLFormElement;
 } = {
   state: new w86.W86CpuState(),
   memorySize: 1048576,
-  rom: new ArrayBuffer(1048576),
+  memory: new Uint8Array(),
+  _rom: new ArrayBuffer(1048576),
+  rom: new Uint8Array(),
   baseAddress: 0x00000,
   ui: <HTMLFormElement> document.getElementById("emulator")
 };
@@ -136,7 +140,8 @@ emulator.state.registers = {
   flags: 0x0000
 };
 emulator.state.memory = w86._malloc(emulator.memorySize);
-w86.HEAPU8.subarray(emulator.state.memory, emulator.state.memory + emulator.memorySize).fill(0);
+emulator.memory = w86.HEAPU8.subarray(emulator.state.memory, emulator.state.memory + emulator.memorySize).fill(0);
+emulator.rom = new Uint8Array(new ArrayBuffer(emulator.memorySize));
 
 (<Element> emulator.ui.elements.namedItem("step")).addEventListener("click", (): void => {
   stepEmulator();
@@ -150,8 +155,7 @@ w86.HEAPU8.subarray(emulator.state.memory, emulator.state.memory + emulator.memo
 
 (<Element> emulator.ui.elements.namedItem("rom")).addEventListener("change", (event: Event): void => {
   (<HTMLInputElement> event.currentTarget).files?.item(0)?.arrayBuffer().then((buf: ArrayBuffer): void => {
-    const view: Uint8Array = new Uint8Array(emulator.rom);
-    view.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
+    emulator.rom.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
     resetEmulator();
     updateDisplay();
   });

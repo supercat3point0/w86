@@ -12,7 +12,10 @@ extern "C" {
 #define W86_ADDRESS_SIZE 20
 #define W86_REAL_SEGMENT_SIZE 16
 #define W86_REAL_POINTER_SIZE 16
-#define W86_REAL_ADDRESS(segment, pointer) (((segment % (1 << W86_REAL_SEGMENT_SIZE) << 4) + pointer % (1 << W86_REAL_POINTER_SIZE)) % (1 << W86_ADDRESS_SIZE))
+#define W86_BOUND_ADDRESS(address) ((address) % (1 << W86_ADDRESS_SIZE))
+#define W86_REAL_ADDRESS(segment, pointer) W86_BOUND_ADDRESS(((segment) % (1 << W86_REAL_SEGMENT_SIZE) << 4) + (pointer) % (1 << W86_REAL_POINTER_SIZE))
+#define W86_GET_BYTE(array, index) ((uint8_t) (array)[W86_BOUND_ADDRESS(index)])
+#define W86_GET_WORD(array, index) ((uint16_t) ((array)[W86_BOUND_ADDRESS(index)] | (array)[W86_BOUND_ADDRESS((index) + 1)] << 8))
 
 struct w86_register_file {
   uint16_t ax;
@@ -42,8 +45,10 @@ struct w86_cpu_state {
 
 enum w86_status {
   W86_STATUS_SUCCESS,
+  W86_STATUS_UNKNOWN_ERROR,
   W86_STATUS_UNDEFINED_OPCODE,
-  W86_STATUS_UNIMPLEMENTED_OPCODE
+  W86_STATUS_UNIMPLEMENTED_OPCODE,
+  W86_STATUS_INVALID_OPCODE
 };
 
 enum w86_status w86_cpu_step(struct w86_cpu_state*);

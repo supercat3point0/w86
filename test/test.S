@@ -5,6 +5,13 @@
         .text
         .code16
 _start:
+        movw $0x0000, %ax
+        movw %ax, %ds
+        movw %ax, %es
+        movw $0x7000, %ax
+        movw %ax, %ss
+        movw $0x0000, %sp
+
         movw $8, %di
         call fibonacci
 

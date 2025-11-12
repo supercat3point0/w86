@@ -52,12 +52,19 @@ function stepEmulator(): void {
   switch (w86.w86CpuStep(emulator.state)) {
   case w86.W86Status.SUCCESS:
     break;
+
   case w86.W86Status.UNDEFINED_OPCODE:
-    console.error(`Undefined opcode: 0x${emulator.memory[((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)]!.toString(16).toUpperCase().padStart(2, "0")}`);
+    console.error(`Undefined opcode at 0x${(((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)).toString(16).toUpperCase().padStart(5, "0")}`);
     break;
+
   case w86.W86Status.UNIMPLEMENTED_OPCODE:
-    console.error(`Unimplemented opcode: 0x${emulator.memory[((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)]!.toString(16).toUpperCase().padStart(2, "0")}`);
+    console.error(`Unimplemented opcode at 0x${(((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)).toString(16).toUpperCase().padStart(5, "0")}`);
     break;
+
+  case w86.W86Status.INVALID_OPERATION:
+    console.error(`Invalid operation at 0x${(((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)).toString(16).toUpperCase().padStart(5, "0")}`);
+    break;
+
   default:
     console.error("Unknown error");
   }

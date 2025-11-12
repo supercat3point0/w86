@@ -1,21 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef W86_W86_H
-#define W86_W86_H
+#ifndef W86_W86_H_
+#define W86_W86_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
-
-#define W86_ADDRESS_SIZE 20
-#define W86_REAL_SEGMENT_SIZE 16
-#define W86_REAL_POINTER_SIZE 16
-#define W86_BOUND_ADDRESS(address) ((address) % (1 << W86_ADDRESS_SIZE))
-#define W86_REAL_ADDRESS(segment, pointer) W86_BOUND_ADDRESS(((segment) % (1 << W86_REAL_SEGMENT_SIZE) << 4) + (pointer) % (1 << W86_REAL_POINTER_SIZE))
-#define W86_GET_BYTE(array, index) ((uint8_t) (array)[W86_BOUND_ADDRESS(index)])
-#define W86_GET_WORD(array, index) ((uint16_t) ((array)[W86_BOUND_ADDRESS(index)] | (array)[W86_BOUND_ADDRESS((index) + 1)] << 8))
 
 struct w86_register_file {
   uint16_t ax;
@@ -48,7 +40,7 @@ enum w86_status {
   W86_STATUS_UNKNOWN_ERROR,
   W86_STATUS_UNDEFINED_OPCODE,
   W86_STATUS_UNIMPLEMENTED_OPCODE,
-  W86_STATUS_INVALID_OPCODE
+  W86_STATUS_INVALID_OPERATION
 };
 
 enum w86_status w86_cpu_step(struct w86_cpu_state*);
@@ -57,4 +49,4 @@ enum w86_status w86_cpu_step(struct w86_cpu_state*);
 }
 #endif
 
-#endif /* W86_W86_H */
+#endif /* W86_W86_H_ */

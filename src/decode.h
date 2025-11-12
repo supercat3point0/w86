@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef W86_DECODE_H
-#define W86_DECODE_H
+#ifndef W86_DECODE_H_
+#define W86_DECODE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,4 +36,4 @@ enum w86_status w86_decode(struct w86_cpu_state*);
 }
 #endif
 
-#endif /* W86_DECODE_H */
+#endif /* W86_DECODE_H_ */

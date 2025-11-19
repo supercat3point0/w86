@@ -16,6 +16,8 @@ typedef enum w86_status w86_instruction(struct w86_cpu_state*, uint16_t, struct 
 
 // these are functions
 w86_instruction w86_instruction_mov;
+w86_instruction w86_instruction_call;
+w86_instruction w86_instruction_ret;
 w86_instruction w86_instruction_jmp;
 
 #ifdef __cplusplus

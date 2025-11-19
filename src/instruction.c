@@ -69,7 +69,7 @@ enum w86_status w86_instruction_mov(struct w86_cpu_state* state, uint16_t offset
     break;
 
   case 0xa0: // mem8 -> al
-    state->registers.ax &= 0xf0;
+    state->registers.ax &= 0xff00;
     state->registers.ax |= w86_get_byte(state, segment, w86_get_word(state, state->registers.cs, offset + 1));
     break;
 
@@ -86,42 +86,42 @@ enum w86_status w86_instruction_mov(struct w86_cpu_state* state, uint16_t offset
     break;
 
   case 0xb0 | W86_MODRM_REG_AL: // imm8 -> reg8
-    state->registers.ax &= 0xf0;
+    state->registers.ax &= 0xff00;
     state->registers.ax |= w86_get_byte(state, state->registers.cs, offset + 1);
     break;
 
   case 0xb0 | W86_MODRM_REG_CL:
-    state->registers.cx &= 0xf0;
+    state->registers.cx &= 0xff00;
     state->registers.cx |= w86_get_byte(state, state->registers.cs, offset + 1);
     break;
 
   case 0xb0 | W86_MODRM_REG_DL:
-    state->registers.dx &= 0xf0;
+    state->registers.dx &= 0xff00;
     state->registers.dx |= w86_get_byte(state, state->registers.cs, offset + 1);
     break;
   
   case 0xb0 | W86_MODRM_REG_BL:
-    state->registers.bx &= 0xf0;
+    state->registers.bx &= 0xff00;
     state->registers.bx |= w86_get_byte(state, state->registers.cs, offset + 1);
     break;
   
   case 0xb0 | W86_MODRM_REG_AH:
-    state->registers.ax &= 0x0f;
+    state->registers.ax &= 0x00ff;
     state->registers.ax |= w86_get_byte(state, state->registers.cs, offset + 1) << 8;
     break;
 
   case 0xb0 | W86_MODRM_REG_CH:
-    state->registers.cx &= 0x0f;
+    state->registers.cx &= 0x00ff;
     state->registers.cx |= w86_get_byte(state, state->registers.cs, offset + 1) << 8;
     break;
 
   case 0xb0 | W86_MODRM_REG_DH:
-    state->registers.dx &= 0x0f;
+    state->registers.dx &= 0x00ff;
     state->registers.dx |= w86_get_byte(state, state->registers.cs, offset + 1) << 8;
     break;
 
   case 0xb0 | W86_MODRM_REG_BH:
-    state->registers.bx &= 0x0f;
+    state->registers.bx &= 0x00ff;
     state->registers.bx |= w86_get_byte(state, state->registers.cs, offset + 1) << 8;
     break;
   
@@ -176,10 +176,60 @@ enum w86_status w86_instruction_mov(struct w86_cpu_state* state, uint16_t offset
   return W86_STATUS_SUCCESS;
 }
 
+enum w86_status w86_instruction_call(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  switch (w86_get_byte(state, state->registers.cs, offset)) {
+  case 0x9a: // far call
+    state->registers.sp -= 4;
+    w86_set_word(state, state->registers.ss, state->registers.sp, offset + 5);
+    state->registers.ip = w86_get_word(state, state->registers.cs, offset + 1);
+    w86_set_word(state, state->registers.ss, state->registers.sp + 2, state->registers.cs);
+    state->registers.cs = w86_get_word(state, state->registers.cs, offset + 3);
+    break;
+
+  case 0xe8: // near call
+    state->registers.sp -= 2;
+    w86_set_word(state, state->registers.ss, state->registers.sp, offset + 3);
+    state->registers.ip += (int16_t) w86_get_word(state, state->registers.cs, offset + 1) + 3;
+    break;
+  
+  case 0xff: // indirect call
+    return W86_STATUS_UNIMPLEMENTED_OPCODE;
+
+  default:
+    return W86_STATUS_INVALID_OPERATION;
+  }
+
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_ret(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  uint8_t first_byte = w86_get_byte(state, state->registers.cs, offset);
+  switch (first_byte) {
+  case 0xc2: // near return with imm16
+  case 0xc3: // near return
+  case 0xca: // far return with imm16
+  case 0xcb: // far return
+    uint16_t pop = !(first_byte & 0b00000001) ? w86_get_word(state, state->registers.cs, offset + 1) : 0;
+    state->registers.ip = w86_get_word(state, state->registers.ss, state->registers.sp);
+    state->registers.sp += 2;
+    if (first_byte & 0b00001000) {
+      state->registers.cs = w86_get_word(state, state->registers.ss, state->registers.sp);
+      state->registers.sp += 2;
+    }
+    state->registers.sp += pop;
+    break;
+
+  default:
+    return W86_STATUS_INVALID_OPERATION;
+  }
+
+  return W86_STATUS_SUCCESS;
+}
+
 enum w86_status w86_instruction_jmp(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
   switch (w86_get_byte(state, state->registers.cs, offset)) {
   case 0xe9: // near jump
-    state->registers.ip += (int16_t) w86_get_word(state, state->registers.cs, offset + 1);
+    state->registers.ip += (int16_t) w86_get_word(state, state->registers.cs, offset + 1) + 3;
     break;
 
   case 0xea: // far jump
@@ -188,7 +238,7 @@ enum w86_status w86_instruction_jmp(struct w86_cpu_state* state, uint16_t offset
     break;
 
   case 0xeb: // short jump
-    state->registers.ip += (int8_t) w86_get_byte(state, state->registers.cs, offset + 1);
+    state->registers.ip += (int8_t) w86_get_byte(state, state->registers.cs, offset + 1) + 2;
     break;
 
   case 0xff: // indirect jump

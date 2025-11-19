@@ -143,42 +143,42 @@ bool w86_modrm_byte_load(struct w86_cpu_state* state, struct w86_modrm_info info
 
   switch (info.reg) {
   case W86_MODRM_REG_AL:
-    state->registers.ax &= 0xf0;
+    state->registers.ax &= 0xff00;
     state->registers.ax |= value;
     break;
 
   case W86_MODRM_REG_CL:
-    state->registers.cx &= 0xf0;
+    state->registers.cx &= 0xff00;
     state->registers.cx |= value;
     break;
 
   case W86_MODRM_REG_DL:
-    state->registers.dx &= 0xf0;
+    state->registers.dx &= 0xff00;
     state->registers.dx |= value;
     break;
 
   case W86_MODRM_REG_BL:
-    state->registers.bx &= 0xf0;
+    state->registers.bx &= 0xff00;
     state->registers.bx |= value;
     break;
 
   case W86_MODRM_REG_AH:
-    state->registers.ax &= 0x0f;
+    state->registers.ax &= 0x00ff;
     state->registers.ax |= value << 8;
     break;
 
   case W86_MODRM_REG_CH:
-    state->registers.cx &= 0x0f;
+    state->registers.cx &= 0x00ff;
     state->registers.cx |= value << 8;
     break;
 
   case W86_MODRM_REG_DH:
-    state->registers.dx &= 0x0f;
+    state->registers.dx &= 0x00ff;
     state->registers.dx |= value << 8;
     break;
 
   case W86_MODRM_REG_BH:
-    state->registers.bx &= 0x0f;
+    state->registers.bx &= 0x00ff;
     state->registers.bx |= value << 8;
     break;
 
@@ -231,42 +231,42 @@ bool w86_modrm_byte_store(struct w86_cpu_state* state, struct w86_modrm_info inf
 
   if (info.mod == W86_MODRM_MOD_REG) switch (info.rm.reg) {
   case W86_MODRM_REG_AL:
-    state->registers.ax &= 0xf0;
+    state->registers.ax &= 0xff00;
     state->registers.ax |= value;
     break;
 
   case W86_MODRM_REG_CL:
-    state->registers.cx &= 0xf0;
+    state->registers.cx &= 0xff00;
     state->registers.cx |= value;
     break;
 
   case W86_MODRM_REG_DL:
-    state->registers.dx &= 0xf0;
+    state->registers.dx &= 0xff00;
     state->registers.dx |= value;
     break;
 
   case W86_MODRM_REG_BL:
-    state->registers.bx &= 0xf0;
+    state->registers.bx &= 0xff00;
     state->registers.bx |= value;
     break;
 
   case W86_MODRM_REG_AH:
-    state->registers.ax &= 0x0f;
+    state->registers.ax &= 0x00ff;
     state->registers.ax |= value << 8;
     break;
 
   case W86_MODRM_REG_CH:
-    state->registers.cx &= 0x0f;
+    state->registers.cx &= 0x00ff;
     state->registers.cx |= value << 8;
     break;
 
   case W86_MODRM_REG_DH:
-    state->registers.dx &= 0x0f;
+    state->registers.dx &= 0x00ff;
     state->registers.dx |= value << 8;
     break;
 
   case W86_MODRM_REG_BH:
-    state->registers.bx &= 0x0f;
+    state->registers.bx &= 0x00ff;
     state->registers.bx |= value << 8;
     break;
 

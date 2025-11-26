@@ -12,10 +12,11 @@ extern "C" {
 #include "decode.h"
 #include "w86.h"
 
-typedef enum w86_status w86_instruction(struct w86_cpu_state*, uint16_t, struct w86_instruction_prefixes);
+typedef enum w86_status w86_instruction(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes prefixes);
 
 // these are functions
 w86_instruction w86_instruction_mov;
+w86_instruction w86_instruction_cmp;
 w86_instruction w86_instruction_call;
 w86_instruction w86_instruction_ret;
 w86_instruction w86_instruction_jmp;

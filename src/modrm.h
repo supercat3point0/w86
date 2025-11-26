@@ -73,14 +73,23 @@ struct w86_modrm_info {
   size_t size;
 };
 
-struct w86_modrm_info w86_modrm_parse(struct w86_cpu_state*, uint16_t, enum w86_segment_prefix);
+struct w86_modrm_info w86_modrm_parse(struct w86_cpu_state* state, uint16_t offset, enum w86_segment_prefix segment);
 
-bool w86_modrm_byte_load(struct w86_cpu_state*, struct w86_modrm_info, uint8_t*);
-bool w86_modrm_byte_store(struct w86_cpu_state*, struct w86_modrm_info, uint8_t*);
-bool w86_modrm_word_load(struct w86_cpu_state*, struct w86_modrm_info, uint16_t*);
-bool w86_modrm_word_store(struct w86_cpu_state*, struct w86_modrm_info, uint16_t*);
-bool w86_modrm_segment_load(struct w86_cpu_state*, struct w86_modrm_info, uint16_t*);
-bool w86_modrm_segment_store(struct w86_cpu_state*, struct w86_modrm_info, uint16_t*);
+bool w86_modrm_get_reg_byte(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret);
+bool w86_modrm_get_rm_byte(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret);
+bool w86_modrm_set_reg_byte(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t value);
+bool w86_modrm_set_rm_byte(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t value);
+bool w86_modrm_get_reg_word(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret);
+bool w86_modrm_get_rm_word(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret);
+bool w86_modrm_set_reg_word(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t value);
+bool w86_modrm_set_rm_word(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t value);
+
+bool w86_modrm_byte_load(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret);
+bool w86_modrm_byte_store(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret);
+bool w86_modrm_word_load(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret);
+bool w86_modrm_word_store(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret);
+bool w86_modrm_segment_load(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret);
+bool w86_modrm_segment_store(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret);
 
 #ifdef __cplusplus
 }

@@ -13,6 +13,10 @@
 // welcome to switch statement hell...
 // TODO: actually make this switch statement hell
 
+static inline uint16_t sbw(uint8_t value) {
+  return (int8_t) value;
+}
+
 static inline uint16_t get_segment(struct w86_cpu_state* state, enum w86_segment_prefix segment) {
   switch (segment) {
   case W86_SEGMENT_PREFIX_CS:
@@ -28,6 +32,50 @@ static inline uint16_t get_segment(struct w86_cpu_state* state, enum w86_segment
   case W86_SEGMENT_PREFIX_SS:
     return state->registers.ss;
   }
+}
+
+static uint16_t get_flags_byte(uint8_t value) {
+  uint16_t flags = (value == 0) << 6 | (value < 0) << 7;
+
+  // parity
+  uint8_t parity = value;
+  parity ^= parity >> 4;
+  parity ^= parity >> 2;
+  parity ^= parity >> 1;
+  flags |= !(parity & 1) << 2;
+
+  return flags;
+}
+
+static uint16_t get_flags_sub_byte(uint8_t a, uint8_t b, uint8_t* ret) {
+  uint8_t value = a - b;
+  if (ret) *ret = value;
+  return (a < b)
+       | ((a & 0b1111) < (b & 0b1111)) << 4
+       | (((int8_t) b < 0 && (int8_t) a > INT8_MAX + (int8_t) b) || ((int8_t) b > 0 && (int8_t) a < INT8_MIN + (int8_t) b)) << 11
+       | get_flags_byte(value);
+}
+
+static uint16_t get_flags_word(uint16_t value) {
+  uint16_t flags = (value == 0) << 6 | (value < 0) << 7;
+
+  // parity
+  uint8_t parity = value;
+  parity ^= parity >> 4;
+  parity ^= parity >> 2;
+  parity ^= parity >> 1;
+  flags |= !(parity & 1) << 2;
+
+  return flags;
+}
+
+static uint16_t get_flags_sub_word(uint16_t a, uint16_t b, uint16_t* ret) {
+  uint16_t value = a - b;
+  if (ret) *ret = value;
+  return (a < b)
+       | ((a & 0b1111) < (b & 0b1111)) << 4
+       | (((int16_t) b < 0 && (int16_t) a > INT16_MAX + (int16_t) b) || ((int16_t) b > 0 && (int16_t) a < INT16_MIN + (int16_t) b)) << 11
+       | get_flags_word(value);
 }
 
 enum w86_status w86_instruction_mov(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes prefixes) {
@@ -167,6 +215,94 @@ enum w86_status w86_instruction_mov(struct w86_cpu_state* state, uint16_t offset
 
   if ((first_byte & 0b11111100) == 0xa0
    || (first_byte & 0b11111000) == 0xb8) {
+    state->registers.ip = offset + 3;
+  } else {
+    state->registers.ip = offset + 2;
+  }
+  state->registers.ip += info.size;
+
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_cmp(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes prefixes) {
+  uint8_t first_byte = w86_get_byte(state, state->registers.cs, offset);
+  struct w86_modrm_info info = {};
+
+  state->registers.flags &= 0b00000111'00000000;
+  switch (first_byte) {
+    uint8_t a8;
+    uint8_t b8;
+    uint16_t a16;
+    uint16_t b16;
+
+  case 0x38: // r/m8 - reg8
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    w86_modrm_get_rm_byte(state, info, &a8);
+    w86_modrm_get_reg_byte(state, info, &b8);
+    state->registers.flags |= get_flags_sub_byte(a8, b8, nullptr);
+    break;
+
+  case 0x39: // r/m16 - reg16
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    w86_modrm_get_rm_word(state, info, &a16);
+    w86_modrm_get_reg_word(state, info, &b16);
+    state->registers.flags |= get_flags_sub_word(a16, b16, nullptr);
+    break;
+
+  case 0x3a: // reg8 - r/m8
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    w86_modrm_get_reg_byte(state, info, &a8);
+    w86_modrm_get_rm_byte(state, info, &b8);
+    state->registers.flags |= get_flags_sub_byte(a8, b8, nullptr);
+    break;
+
+  case 0x3b: // reg16 - r/m16
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    w86_modrm_get_reg_word(state, info, &a16);
+    w86_modrm_get_rm_word(state, info, &b16);
+    state->registers.flags |= get_flags_sub_word(a16, b16, nullptr);
+    break;
+
+  case 0x3c: // al - imm8
+    state->registers.flags |= get_flags_sub_byte(state->registers.ax, w86_get_byte(state, state->registers.cs, offset + 1), nullptr);
+    break;
+
+  case 0x3d: // ax - imm16
+    state->registers.flags |= get_flags_sub_word(state->registers.ax, w86_get_word(state, state->registers.cs, offset + 1), nullptr);
+    break;
+
+  case 0x80: // r/m8 - imm8
+  case 0x82:
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    if (info.reg != 0b111) return W86_STATUS_INVALID_OPERATION;
+    w86_modrm_get_rm_byte(state, info, &a8);
+    state->registers.flags |= get_flags_sub_byte(a8, w86_get_byte(state, state->registers.cs, offset + 2 + info.size), nullptr);
+    break;
+
+  case 0x81: // r/m16 - imm16
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    if (info.reg != 0b111) return W86_STATUS_INVALID_OPERATION;
+    w86_modrm_get_rm_word(state, info, &a16);
+    state->registers.flags |= get_flags_sub_word(a16, w86_get_word(state, state->registers.cs, offset + 2 + info.size), nullptr);
+    break;
+
+  case 0x83: // r/m16 - imm16sbw
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    if (info.reg != 0b111) return W86_STATUS_INVALID_OPERATION;
+    w86_modrm_get_rm_word(state, info, &a16);
+    state->registers.flags |= get_flags_sub_word(a16, sbw(w86_get_byte(state, state->registers.cs, offset + 2 + info.size)), nullptr);
+    break;
+
+  default:
+    return W86_STATUS_INVALID_OPERATION;
+  }
+
+  if (first_byte == 0x81) {
+    state->registers.ip = offset + 4;
+  } else if (first_byte == 0x3d
+          || first_byte == 0x80
+          || first_byte == 0x82
+          || first_byte == 0x83) {
     state->registers.ip = offset + 3;
   } else {
     state->registers.ip = offset + 2;

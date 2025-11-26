@@ -82,7 +82,50 @@ struct w86_modrm_info w86_modrm_parse(struct w86_cpu_state* state, uint16_t offs
   return info;
 }
 
-bool w86_modrm_byte_load(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret) {
+bool w86_modrm_get_reg_byte(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret) {
+  uint8_t value;
+  switch (info.reg) {
+  case W86_MODRM_REG_AL:
+    value = state->registers.ax;
+    break;
+
+  case W86_MODRM_REG_CL:
+    value = state->registers.cx;
+    break;
+
+  case W86_MODRM_REG_DL:
+    value = state->registers.dx;
+    break;
+
+  case W86_MODRM_REG_BL:
+    value = state->registers.bx;
+    break;
+
+  case W86_MODRM_REG_AH:
+    value = state->registers.ax >> 8;
+    break;
+
+  case W86_MODRM_REG_CH:
+    value = state->registers.cx >> 8;
+    break;
+
+  case W86_MODRM_REG_DH:
+    value = state->registers.dx >> 8;
+    break;
+
+  case W86_MODRM_REG_BH:
+    value = state->registers.bx >> 8;
+    break;
+
+  default:
+    return false;
+  }
+
+  if (ret) *ret = value;
+  return true;
+}
+
+bool w86_modrm_get_rm_byte(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret) {
   uint8_t value;
   if (info.mod == W86_MODRM_MOD_REG) switch (info.rm.reg) {
   case W86_MODRM_REG_AL:
@@ -141,153 +184,157 @@ bool w86_modrm_byte_load(struct w86_cpu_state* state, struct w86_modrm_info info
     return false;
   }
 
-  switch (info.reg) {
-  case W86_MODRM_REG_AL:
-    state->registers.ax &= 0xff00;
-    state->registers.ax |= value;
-    break;
-
-  case W86_MODRM_REG_CL:
-    state->registers.cx &= 0xff00;
-    state->registers.cx |= value;
-    break;
-
-  case W86_MODRM_REG_DL:
-    state->registers.dx &= 0xff00;
-    state->registers.dx |= value;
-    break;
-
-  case W86_MODRM_REG_BL:
-    state->registers.bx &= 0xff00;
-    state->registers.bx |= value;
-    break;
-
-  case W86_MODRM_REG_AH:
-    state->registers.ax &= 0x00ff;
-    state->registers.ax |= value << 8;
-    break;
-
-  case W86_MODRM_REG_CH:
-    state->registers.cx &= 0x00ff;
-    state->registers.cx |= value << 8;
-    break;
-
-  case W86_MODRM_REG_DH:
-    state->registers.dx &= 0x00ff;
-    state->registers.dx |= value << 8;
-    break;
-
-  case W86_MODRM_REG_BH:
-    state->registers.bx &= 0x00ff;
-    state->registers.bx |= value << 8;
-    break;
-
-  default:
-    return false;
-  }
-
   if (ret) *ret = value;
   return true;
 }
 
-bool w86_modrm_byte_store(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret) {
-  uint8_t value;
+bool w86_modrm_set_reg_byte(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t value) {
   switch (info.reg) {
-  case W86_MODRM_REG_AL:
-    value = state->registers.ax;
-    break;
-
-  case W86_MODRM_REG_CL:
-    value = state->registers.cx;
-    break;
-
-  case W86_MODRM_REG_DL:
-    value = state->registers.dx;
-    break;
-
-  case W86_MODRM_REG_BL:
-    value = state->registers.bx;
-    break;
-
-  case W86_MODRM_REG_AH:
-    value = state->registers.ax >> 8;
-    break;
-
-  case W86_MODRM_REG_CH:
-    value = state->registers.cx >> 8;
-    break;
-
-  case W86_MODRM_REG_DH:
-    value = state->registers.dx >> 8;
-    break;
-
-  case W86_MODRM_REG_BH:
-    value = state->registers.bx >> 8;
-    break;
-
-  default:
-    return false;
-  }
-
-  if (info.mod == W86_MODRM_MOD_REG) switch (info.rm.reg) {
   case W86_MODRM_REG_AL:
     state->registers.ax &= 0xff00;
     state->registers.ax |= value;
-    break;
+    return true;
 
   case W86_MODRM_REG_CL:
     state->registers.cx &= 0xff00;
     state->registers.cx |= value;
-    break;
+    return true;
 
   case W86_MODRM_REG_DL:
     state->registers.dx &= 0xff00;
     state->registers.dx |= value;
-    break;
+    return true;
 
   case W86_MODRM_REG_BL:
     state->registers.bx &= 0xff00;
     state->registers.bx |= value;
-    break;
+    return true;
 
   case W86_MODRM_REG_AH:
     state->registers.ax &= 0x00ff;
     state->registers.ax |= value << 8;
-    break;
+    return true;
 
   case W86_MODRM_REG_CH:
     state->registers.cx &= 0x00ff;
     state->registers.cx |= value << 8;
-    break;
+    return true;
 
   case W86_MODRM_REG_DH:
     state->registers.dx &= 0x00ff;
     state->registers.dx |= value << 8;
-    break;
+    return true;
 
   case W86_MODRM_REG_BH:
     state->registers.bx &= 0x00ff;
     state->registers.bx |= value << 8;
-    break;
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+bool w86_modrm_set_rm_byte(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t value) {
+  if (info.mod == W86_MODRM_MOD_REG) switch (info.rm.reg) {
+  case W86_MODRM_REG_AL:
+    state->registers.ax &= 0xff00;
+    state->registers.ax |= value;
+    return true;
+
+  case W86_MODRM_REG_CL:
+    state->registers.cx &= 0xff00;
+    state->registers.cx |= value;
+    return true;
+
+  case W86_MODRM_REG_DL:
+    state->registers.dx &= 0xff00;
+    state->registers.dx |= value;
+    return true;
+
+  case W86_MODRM_REG_BL:
+    state->registers.bx &= 0xff00;
+    state->registers.bx |= value;
+    return true;
+
+  case W86_MODRM_REG_AH:
+    state->registers.ax &= 0x00ff;
+    state->registers.ax |= value << 8;
+    return true;
+
+  case W86_MODRM_REG_CH:
+    state->registers.cx &= 0x00ff;
+    state->registers.cx |= value << 8;
+    return true;
+
+  case W86_MODRM_REG_DH:
+    state->registers.dx &= 0x00ff;
+    state->registers.dx |= value << 8;
+    return true;
+
+  case W86_MODRM_REG_BH:
+    state->registers.bx &= 0x00ff;
+    state->registers.bx |= value << 8;
+    return true;
 
   default:
     return false;
   } else switch (info.segment) {
   case W86_SEGMENT_PREFIX_CS:
     w86_set_byte(state, state->registers.cs, info.address, value);
-    break;
+    return true;
 
   case W86_SEGMENT_PREFIX_NONE:
   case W86_SEGMENT_PREFIX_DS:
     w86_set_byte(state, state->registers.ds, info.address, value);
-    break;
+    return true;
 
   case W86_SEGMENT_PREFIX_ES:
     w86_set_byte(state, state->registers.es, info.address, value);
-    break;
+    return true;
     
   case W86_SEGMENT_PREFIX_SS:
     w86_set_byte(state, state->registers.ss, info.address, value);
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+bool w86_modrm_get_reg_word(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret) {
+  uint16_t value;
+  switch (info.reg) {
+  case W86_MODRM_REG_AX:
+    value = state->registers.ax;
+    break;
+
+  case W86_MODRM_REG_CX:
+    value = state->registers.cx;
+    break;
+
+  case W86_MODRM_REG_DX:
+    value = state->registers.dx;
+    break;
+
+  case W86_MODRM_REG_BX:
+    value = state->registers.bx;
+    break;
+
+  case W86_MODRM_REG_SP:
+    value = state->registers.sp;
+    break;
+
+  case W86_MODRM_REG_BP:
+    value = state->registers.bp;
+    break;
+
+  case W86_MODRM_REG_SI:
+    value = state->registers.si;
+    break;
+
+  case W86_MODRM_REG_DI:
+    value = state->registers.di;
     break;
 
   default:
@@ -298,7 +345,7 @@ bool w86_modrm_byte_store(struct w86_cpu_state* state, struct w86_modrm_info inf
   return true;
 }
 
-bool w86_modrm_word_load(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret) {
+bool w86_modrm_get_rm_word(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret) {
   uint16_t value;
   if (info.mod == W86_MODRM_MOD_REG) switch (info.rm.reg) {
   case W86_MODRM_REG_AX:
@@ -357,205 +404,143 @@ bool w86_modrm_word_load(struct w86_cpu_state* state, struct w86_modrm_info info
     return false;
   }
 
-  switch (info.reg) {
-  case W86_MODRM_REG_AX:
-    state->registers.ax = value;
-    break;
-
-  case W86_MODRM_REG_CX:
-    state->registers.cx = value;
-    break;
-
-  case W86_MODRM_REG_DX:
-    state->registers.dx = value;
-    break;
-
-  case W86_MODRM_REG_BX:
-    state->registers.bx = value;
-    break;
-
-  case W86_MODRM_REG_SP:
-    state->registers.sp = value;
-    break;
-
-  case W86_MODRM_REG_BP:
-    state->registers.bp = value;
-    break;
-
-  case W86_MODRM_REG_SI:
-    state->registers.si = value;
-    break;
-
-  case W86_MODRM_REG_DI:
-    state->registers.di = value;
-    break;
-
-  default:
-    return false;
-  }
-
   if (ret) *ret = value;
   return true;
 }
 
-bool w86_modrm_word_store(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret) {
-  uint16_t value;
+bool w86_modrm_set_reg_word(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t value) {
   switch (info.reg) {
   case W86_MODRM_REG_AX:
-    value = state->registers.ax;
-    break;
+    state->registers.ax = value;
+    return true;
 
   case W86_MODRM_REG_CX:
-    value = state->registers.cx;
-    break;
+    state->registers.cx = value;
+    return true;
 
   case W86_MODRM_REG_DX:
-    value = state->registers.dx;
-    break;
+    state->registers.dx = value;
+    return true;
 
   case W86_MODRM_REG_BX:
-    value = state->registers.bx;
-    break;
+    state->registers.bx = value;
+    return true;
 
   case W86_MODRM_REG_SP:
-    value = state->registers.sp;
-    break;
+    state->registers.sp = value;
+    return true;
 
   case W86_MODRM_REG_BP:
-    value = state->registers.bp;
-    break;
+    state->registers.bp = value;
+    return true;
 
   case W86_MODRM_REG_SI:
-    value = state->registers.si;
-    break;
+    state->registers.si = value;
+    return true;
 
   case W86_MODRM_REG_DI:
-    value = state->registers.di;
-    break;
+    state->registers.di = value;
+    return true;
 
   default:
     return false;
   }
+}
 
+bool w86_modrm_set_rm_word(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t value) {
   if (info.mod == W86_MODRM_MOD_REG) switch (info.rm.reg) {
   case W86_MODRM_REG_AX:
     state->registers.ax = value;
-    break;
+    return true;
 
   case W86_MODRM_REG_CX:
     state->registers.cx = value;
-    break;
+    return true;
 
   case W86_MODRM_REG_DX:
     state->registers.dx = value;
-    break;
+    return true;
 
   case W86_MODRM_REG_BX:
     state->registers.bx = value;
-    break;
+    return true;
 
   case W86_MODRM_REG_SP:
     state->registers.sp = value;
-    break;
+    return true;
 
   case W86_MODRM_REG_BP:
     state->registers.bp = value;
-    break;
+    return true;
 
   case W86_MODRM_REG_SI:
     state->registers.si = value;
-    break;
+    return true;
 
   case W86_MODRM_REG_DI:
     state->registers.di = value;
-    break;
+    return true;
 
   default:
     return false;
   } else switch (info.segment) {
   case W86_SEGMENT_PREFIX_CS:
     w86_set_word(state, state->registers.cs, info.address, value);
-    break;
+    return true;
 
   case W86_SEGMENT_PREFIX_NONE:
   case W86_SEGMENT_PREFIX_DS:
     w86_set_word(state, state->registers.ds, info.address, value);
-    break;
+    return true;
 
   case W86_SEGMENT_PREFIX_ES:
     w86_set_word(state, state->registers.es, info.address, value);
-    break;
+    return true;
 
   case W86_SEGMENT_PREFIX_SS:
     w86_set_word(state, state->registers.ss, info.address, value);
-    break;
+    return true;
 
   default:
     return false;
   }
+}
 
+bool w86_modrm_byte_load(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret) {
+  uint8_t value;
+  if (!w86_modrm_get_rm_byte(state, info, &value)) return false;
+  if (!w86_modrm_set_reg_byte(state, info, value)) return false;
+  if (ret) *ret = value;
+  return true;
+}
+
+bool w86_modrm_byte_store(struct w86_cpu_state* state, struct w86_modrm_info info, uint8_t* ret) {
+  uint8_t value;
+  if (!w86_modrm_get_reg_byte(state, info, &value)) return false;
+  if (!w86_modrm_set_rm_byte(state, info, value)) return false;
+  if (ret) *ret = value;
+  return true;
+}
+
+bool w86_modrm_word_load(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret) {
+  uint16_t value;
+  if (!w86_modrm_get_rm_word(state, info, &value)) return false;
+  if (!w86_modrm_set_reg_word(state, info, value)) return false;
+  if (ret) *ret = value;
+  return true;
+}
+
+bool w86_modrm_word_store(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret) {
+  uint16_t value;
+  if (!w86_modrm_get_reg_word(state, info, &value)) return false;
+  if (!w86_modrm_set_rm_word(state, info, value)) return false;
   if (ret) *ret = value;
   return true;
 }
 
 bool w86_modrm_segment_load(struct w86_cpu_state* state, struct w86_modrm_info info, uint16_t* ret) {
   uint16_t value;
-  if (info.mod == W86_MODRM_MOD_REG) switch (info.rm.reg) {
-  case W86_MODRM_REG_AX:
-    value = state->registers.ax;
-    break;
-
-  case W86_MODRM_REG_CX:
-    value = state->registers.cx;
-    break;
-
-  case W86_MODRM_REG_DX:
-    value = state->registers.dx;
-    break;
-
-  case W86_MODRM_REG_BX:
-    value = state->registers.bx;
-    break;
-
-  case W86_MODRM_REG_SP:
-    value = state->registers.sp;
-    break;
-
-  case W86_MODRM_REG_BP:
-    value = state->registers.bp;
-    break;
-
-  case W86_MODRM_REG_SI:
-    value = state->registers.si;
-    break;
-
-  case W86_MODRM_REG_DI:
-    value = state->registers.di;
-    break;
-
-  default:
-    return false;
-  } else switch (info.segment) {
-  case W86_SEGMENT_PREFIX_CS:
-    value = w86_get_word(state, state->registers.cs, info.address);
-    break;
-
-  case W86_SEGMENT_PREFIX_NONE:
-  case W86_SEGMENT_PREFIX_DS:
-    value = w86_get_word(state, state->registers.ds, info.address);
-    break;
-
-  case W86_SEGMENT_PREFIX_ES:
-    value = w86_get_word(state, state->registers.es, info.address);
-    break;
-
-  case W86_SEGMENT_PREFIX_SS:
-    value = w86_get_word(state, state->registers.ss, info.address);
-    break;
-
-  default:
-    return false;
-  }
+  if (!w86_modrm_get_rm_word(state, info, &value)) return false;
 
   switch (info.reg) {
   case W86_MODRM_REG_ES:
@@ -605,63 +590,7 @@ bool w86_modrm_segment_store(struct w86_cpu_state* state, struct w86_modrm_info 
     return false;
   }
 
-  if (info.mod == W86_MODRM_MOD_REG) switch (info.rm.reg) {
-  case W86_MODRM_REG_AX:
-    state->registers.ax = value;
-    break;
-
-  case W86_MODRM_REG_CX:
-    state->registers.cx = value;
-    break;
-
-  case W86_MODRM_REG_DX:
-    state->registers.dx = value;
-    break;
-
-  case W86_MODRM_REG_BX:
-    state->registers.bx = value;
-    break;
-
-  case W86_MODRM_REG_SP:
-    state->registers.sp = value;
-    break;
-
-  case W86_MODRM_REG_BP:
-    state->registers.bp = value;
-    break;
-
-  case W86_MODRM_REG_SI:
-    state->registers.si = value;
-    break;
-
-  case W86_MODRM_REG_DI:
-    state->registers.di = value;
-    break;
-
-  default:
-    return false;
-  } else switch (info.segment) {
-  case W86_SEGMENT_PREFIX_CS:
-    w86_set_word(state, state->registers.cs, info.address, value);
-    break;
-
-  case W86_SEGMENT_PREFIX_NONE:
-  case W86_SEGMENT_PREFIX_DS:
-    w86_set_word(state, state->registers.ds, info.address, value);
-    break;
-
-  case W86_SEGMENT_PREFIX_ES:
-    w86_set_word(state, state->registers.es, info.address, value);
-    break;
-
-  case W86_SEGMENT_PREFIX_SS:
-    w86_set_word(state, state->registers.ss, info.address, value);
-    break;
-
-  default:
-    return false;
-  }
-
+  if (!w86_modrm_set_rm_word(state, info, value)) return false;
   if (ret) *ret = value;
   return true;
 }

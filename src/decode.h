@@ -30,7 +30,7 @@ struct w86_instruction_prefixes {
   bool lock;
 };
 
-enum w86_status w86_decode(struct w86_cpu_state*);
+enum w86_status w86_decode(struct w86_cpu_state* state);
 
 #ifdef __cplusplus
 }

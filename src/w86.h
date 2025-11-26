@@ -43,7 +43,7 @@ enum w86_status {
   W86_STATUS_INVALID_OPERATION
 };
 
-enum w86_status w86_cpu_step(struct w86_cpu_state*);
+enum w86_status w86_cpu_step(struct w86_cpu_state* state);
 
 #ifdef __cplusplus
 }

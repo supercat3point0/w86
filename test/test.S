@@ -22,13 +22,13 @@ _start:
 fibonacci:
         movw $0, %ax
         movw $1, %dx
-1:      cmpw $0, %di
-        jz 1f
-        addw %dx, %ax
+        cmpw $0, %di
+        jz 2f
+1:      addw %dx, %ax
         xchgw %dx, %ax
         decw %di
-        jmp 1b      
-1:      ret
+        jnz 1b      
+2:      ret
 
         .section .text.init
         ljmp $0x0000, $_start

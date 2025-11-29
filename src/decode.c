@@ -49,6 +49,42 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0xc7:
     return w86_instruction_mov(state, offset, prefixes);
 
+  case 0x00: // add
+  case 0x01:
+  case 0x02:
+  case 0x03:
+  case 0x04:
+  case 0x05:
+    return w86_instruction_add(state, offset, prefixes);
+
+  case 0x40: // inc
+  case 0x41:
+  case 0x42:
+  case 0x43:
+  case 0x44:
+  case 0x45:
+  case 0x46:
+  case 0x47:
+    return w86_instruction_inc(state, offset, prefixes);
+
+  case 0x28: // sub
+  case 0x29:
+  case 0x2a:
+  case 0x2b:
+  case 0x2c:
+  case 0x2d:
+    return w86_instruction_sub(state, offset, prefixes);
+
+  case 0x48: // dec
+  case 0x49:
+  case 0x4a:
+  case 0x4b:
+  case 0x4c:
+  case 0x4d:
+  case 0x4e:
+  case 0x4f:
+    return w86_instruction_dec(state, offset, prefixes);
+
   case 0x38: // cmp
   case 0x39:
   case 0x3a:
@@ -72,21 +108,43 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0xeb:
     return w86_instruction_jmp(state, offset, prefixes);
 
+  case 0x70: // jo
+  case 0x71: // jno
+  case 0x72: // jb/jnae/jc
+  case 0x73: // jae/jnb/jnc
+  case 0x74: // je/jz
+  case 0x75: // jne/jnz
+  case 0x76: // jbe/jna
+  case 0x77: // ja/jnbe
+  case 0x78: // js
+  case 0x79: // jns
+  case 0x7a: // jp/jpe
+  case 0x7b: // jnp/jpo
+  case 0x7c: // jl/jnge
+  case 0x7d: // jge/jnl
+  case 0x7e: // jle/jng
+  case 0x7f: // jg/jnle
+    return w86_instruction_jcc(state, offset, prefixes);
+
   case 0x80: // immediate instruction group
   case 0x81:
   case 0x82:
   case 0x83:
     switch (w86_get_byte(state, state->registers.cs, offset + 1) >> 3 & 0b111) {
-      case 0b111: // cmp
-        return w86_instruction_cmp(state, offset, prefixes);
+    case 0b000: // add
+      return w86_instruction_add(state, offset, prefixes);
 
-      case 0b000:
-      case 0b001:
-      case 0b011:
-      case 0b100:
-      case 0b101:
-      case 0b110:
-        return W86_STATUS_UNIMPLEMENTED_OPCODE;
+    case 0b101: // sub
+      return w86_instruction_sub(state, offset, prefixes);
+
+    case 0b111: // cmp
+      return w86_instruction_cmp(state, offset, prefixes);
+
+    case 0b001:
+    case 0b011:
+    case 0b100:
+    case 0b110:
+      return W86_STATUS_UNIMPLEMENTED_OPCODE;
     }
 
   case 0xd0: // shift instruction group
@@ -101,14 +159,24 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
 
   case 0xfe: // instruction group 2
   case 0xff:
-    return W86_STATUS_UNIMPLEMENTED_OPCODE;
+    switch (w86_get_byte(state, state->registers.cs, offset + 1) >> 3 & 0b111) {
+    case 0b000: // inc
+      return w86_instruction_inc(state, offset, prefixes);
 
-  case 0x00:
-  case 0x01:
-  case 0x02:
-  case 0x03:
-  case 0x04:
-  case 0x05:
+    case 0b001: // dec
+      return w86_instruction_dec(state, offset, prefixes);
+
+    case 0b010:
+    case 0b011:
+    case 0b100:
+    case 0b101:
+    case 0b110:
+      return W86_STATUS_UNIMPLEMENTED_OPCODE;
+
+    default:
+      return W86_STATUS_UNDEFINED_OPCODE;
+    }
+
   case 0x06:
   case 0x07:
   case 0x08:
@@ -142,12 +210,6 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0x25:
   case 0x26:
   case 0x27:
-  case 0x28:
-  case 0x29:
-  case 0x2a:
-  case 0x2b:
-  case 0x2c:
-  case 0x2d:
   case 0x2e:
   case 0x2f:
   case 0x30:
@@ -160,22 +222,6 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0x37:
   case 0x3e:
   case 0x3f:
-  case 0x40:
-  case 0x41:
-  case 0x42:
-  case 0x43:
-  case 0x44:
-  case 0x45:
-  case 0x46:
-  case 0x47:
-  case 0x48:
-  case 0x49:
-  case 0x4a:
-  case 0x4b:
-  case 0x4c:
-  case 0x4d:
-  case 0x4e:
-  case 0x4f:
   case 0x50:
   case 0x51:
   case 0x52:
@@ -192,22 +238,6 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0x5d:
   case 0x5e:
   case 0x5f:
-  case 0x70:
-  case 0x71:
-  case 0x72:
-  case 0x73:
-  case 0x74:
-  case 0x75:
-  case 0x76:
-  case 0x77:
-  case 0x78:
-  case 0x79:
-  case 0x7a:
-  case 0x7b:
-  case 0x7c:
-  case 0x7d:
-  case 0x7e:
-  case 0x7f:
   case 0x84:
   case 0x85:
   case 0x86:

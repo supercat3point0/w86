@@ -49,6 +49,18 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0xc7:
     return w86_instruction_mov(state, offset, prefixes);
 
+  case 0x86: // xchg
+  case 0x87:
+  case 0x90:
+  case 0x91:
+  case 0x92:
+  case 0x93:
+  case 0x94:
+  case 0x95:
+  case 0x96:
+  case 0x97:
+    return w86_instruction_xchg(state, offset, prefixes);
+
   case 0x00: // add
   case 0x01:
   case 0x02:
@@ -240,18 +252,8 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0x5f:
   case 0x84:
   case 0x85:
-  case 0x86:
-  case 0x87:
   case 0x8d:
   case 0x8f:
-  case 0x90:
-  case 0x91:
-  case 0x92:
-  case 0x93:
-  case 0x94:
-  case 0x95:
-  case 0x96:
-  case 0x97:
   case 0x98:
   case 0x99:
   case 0x9b:

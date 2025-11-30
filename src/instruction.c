@@ -241,6 +241,90 @@ enum w86_status w86_instruction_mov(struct w86_cpu_state* state, uint16_t offset
   return W86_STATUS_SUCCESS;
 }
 
+enum w86_status w86_instruction_xchg(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes prefixes) {
+  uint8_t first_byte = w86_get_byte(state, state->registers.cs, offset);
+  struct w86_modrm_info info = {};
+
+  switch (first_byte) {
+    union {
+      uint8_t u8;
+      uint16_t u16;
+    } temp;
+
+  case 0x86: // reg8 <-> r/m8
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    w86_modrm_get_rm_byte(state, info, &temp.u8);
+    w86_modrm_byte_store(state, info, nullptr);
+    w86_modrm_set_reg_byte(state, info, temp.u8);
+    break;
+
+  case 0x87: // reg16 <-> r/m16
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    w86_modrm_get_rm_word(state, info, &temp.u16);
+    w86_modrm_word_store(state, info, nullptr);
+    w86_modrm_set_reg_word(state, info, temp.u16);
+    break;
+
+  case 0x90 | W86_MODRM_REG_AX: // ax <-> reg16
+    break;
+
+  case 0x90 | W86_MODRM_REG_CX:
+    temp.u16 = state->registers.cx;
+    state->registers.cx = state->registers.ax;
+    state->registers.ax = temp.u16;
+    break;
+
+  case 0x90 | W86_MODRM_REG_DX:
+    temp.u16 = state->registers.dx;
+    state->registers.dx = state->registers.ax;
+    state->registers.ax = temp.u16;
+    break;
+
+  case 0x90 | W86_MODRM_REG_BX:
+    temp.u16 = state->registers.bx;
+    state->registers.bx = state->registers.ax;
+    state->registers.ax = temp.u16;
+    break;
+
+  case 0x90 | W86_MODRM_REG_SP:
+    temp.u16 = state->registers.sp;
+    state->registers.sp = state->registers.ax;
+    state->registers.ax = temp.u16;
+    break;
+
+  case 0x90 | W86_MODRM_REG_BP:
+    temp.u16 = state->registers.bp;
+    state->registers.bp = state->registers.ax;
+    state->registers.ax = temp.u16;
+    break;
+
+  case 0x90 | W86_MODRM_REG_SI:
+    temp.u16 = state->registers.si;
+    state->registers.si = state->registers.ax;
+    state->registers.ax = temp.u16;
+    break;
+
+  case 0x90 | W86_MODRM_REG_DI:
+    temp.u16 = state->registers.di;
+    state->registers.di = state->registers.ax;
+    state->registers.ax = temp.u16;
+    break;
+
+  default:
+    return W86_STATUS_INVALID_OPERATION;
+  }
+
+  if (first_byte == 0x86
+   || first_byte == 0x87) {
+    state->registers.ip = offset + 2;
+  } else {
+    state->registers.ip = offset + 1;
+  }
+  state->registers.ip += info.size;
+
+  return W86_STATUS_SUCCESS;
+}
+
 // arithmetic functions should probably be combined into one, but i don't feel like doing that
 
 enum w86_status w86_instruction_add(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes prefixes) {
@@ -762,16 +846,16 @@ enum w86_status w86_instruction_jcc(struct w86_cpu_state* state, uint16_t offset
   if ((first_byte & 0b11110000) != 0x70) return W86_STATUS_INVALID_OPERATION;
 
   // create flags bitmask
-  uint16_t cond = (~first_byte >> 3 &  first_byte >> 1                     & 0b00000000'00000001) // cf
+  uint16_t cond = (~first_byte >> 3 &                     first_byte >> 1  & 0b00000000'00000001) // cf
                 | ( first_byte >> 1 & ~first_byte      &  first_byte << 1  & 0b00000000'00000100) // pf
                 | (~first_byte << 3 &  first_byte << 4                     & 0b00000000'01000000) // zf
-                | ( first_byte << 4 &  first_byte << 5                     & 0b00000000'01000000)
+                | (                    first_byte << 4 &  first_byte << 5  & 0b00000000'01000000)
                 | ( first_byte << 4 &  first_byte << 5                     & 0b00000000'10000000) // sf
                 | (~first_byte << 8 & ~first_byte << 9 & ~first_byte << 10 & 0b00001000'00000000) // of
                 | ( first_byte << 8 &  first_byte << 9                     & 0b00001000'00000000);
   cond &= state->registers.flags;
   state->registers.ip = offset + 2;
-  if (((cond >> 11 ^ cond >> 7) | cond >> 6 | cond >> 2 | cond) ^ (first_byte & 1)) {
+  if ((((cond >> 11 ^ cond >> 7) | cond >> 6 | cond >> 2 | cond) ^ first_byte) & 1) {
     state->registers.ip += (int8_t) w86_get_byte(state, state->registers.cs, offset + 1);
   }
 

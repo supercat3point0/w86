@@ -21,5 +21,5 @@ uint16_t w86_get_word(struct w86_cpu_state* state, uint16_t segment, uint16_t po
 
 void w86_set_word(struct w86_cpu_state* state, uint16_t segment, uint16_t pointer, uint16_t value) {
   state->memory[W86_REAL_ADDRESS(segment, pointer)] = value;
-  state->memory[W86_REAL_ADDRESS(segment, pointer)] = value >> 8;
+  state->memory[W86_REAL_ADDRESS(segment, pointer + 1)] = value >> 8;
 }

@@ -53,6 +53,10 @@ function stepEmulator(): void {
   case w86.W86Status.SUCCESS:
     break;
 
+  case w86.W86Status.HALT:
+    console.info("Processor halted");
+    break;
+
   case w86.W86Status.UNDEFINED_OPCODE:
     console.error(`Undefined opcode at 0x${(((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)).toString(16).toUpperCase().padStart(5, "0")}`);
     break;

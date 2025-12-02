@@ -138,6 +138,30 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0x7f: // jg/jnle
     return w86_instruction_jcc(state, offset, prefixes);
 
+  case 0xf8: // clc
+    return w86_instruction_clc(state, offset, prefixes);
+
+  case 0xf5: // cmc
+    return w86_instruction_cmc(state, offset, prefixes);
+
+  case 0xf9: // stc
+    return w86_instruction_stc(state, offset, prefixes);
+
+  case 0xfa: // cli
+    return w86_instruction_cli(state, offset, prefixes);
+
+  case 0xfb: // sti
+    return w86_instruction_sti(state, offset, prefixes);
+
+  case 0xfc: // cld
+    return w86_instruction_cld(state, offset, prefixes);
+
+  case 0xfd: // std
+    return w86_instruction_std(state, offset, prefixes);
+
+  case 0xf4: // hlt
+    return w86_instruction_hlt(state, offset, prefixes);
+
   case 0x80: // immediate instruction group
   case 0x81:
   case 0x82:
@@ -305,14 +329,6 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0xf0:
   case 0xf2:
   case 0xf3:
-  case 0xf4:
-  case 0xf5:
-  case 0xf8:
-  case 0xf9:
-  case 0xfa:
-  case 0xfb:
-  case 0xfc:
-  case 0xfd:
     return W86_STATUS_UNIMPLEMENTED_OPCODE;
 
   default:

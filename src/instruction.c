@@ -861,3 +861,58 @@ enum w86_status w86_instruction_jcc(struct w86_cpu_state* state, uint16_t offset
 
   return W86_STATUS_SUCCESS;
 }
+
+enum w86_status w86_instruction_clc(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  if (w86_get_byte(state, state->registers.cs, offset) != 0xf8) return W86_STATUS_INVALID_OPERATION;
+  state->registers.flags &= 0b11111111'11111110;
+  state->registers.ip = offset + 1;
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_cmc(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  if (w86_get_byte(state, state->registers.cs, offset) != 0xf5) return W86_STATUS_INVALID_OPERATION;
+  state->registers.flags ^= 0b00000000'00000001;
+  state->registers.ip = offset + 1;
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_stc(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  if (w86_get_byte(state, state->registers.cs, offset) != 0xf9) return W86_STATUS_INVALID_OPERATION;
+  state->registers.flags |= 0b00000000'00000001;
+  state->registers.ip = offset + 1;
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_cli(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  if (w86_get_byte(state, state->registers.cs, offset) != 0xfa) return W86_STATUS_INVALID_OPERATION;
+  state->registers.flags &= 0b11111101'11111111;
+  state->registers.ip = offset + 1;
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_sti(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  if (w86_get_byte(state, state->registers.cs, offset) != 0xfb) return W86_STATUS_INVALID_OPERATION;
+  state->registers.flags |= 0b00000010'00000000;
+  state->registers.ip = offset + 1;
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_cld(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  if (w86_get_byte(state, state->registers.cs, offset) != 0xfc) return W86_STATUS_INVALID_OPERATION;
+  state->registers.flags &= 0b11111011'11111111;
+  state->registers.ip = offset + 1;
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_std(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  if (w86_get_byte(state, state->registers.cs, offset) != 0xfd) return W86_STATUS_INVALID_OPERATION;
+  state->registers.flags |= 0b00000100'00000000;
+  state->registers.ip = offset + 1;
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_hlt(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  if (w86_get_byte(state, state->registers.cs, offset) != 0xf4) return W86_STATUS_INVALID_OPERATION;
+  state->registers.ip = offset + 1;
+  return W86_STATUS_HALT;
+}

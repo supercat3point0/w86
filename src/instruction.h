@@ -29,6 +29,16 @@ w86_instruction w86_instruction_ret;
 w86_instruction w86_instruction_jmp;
 w86_instruction w86_instruction_jcc;
 
+w86_instruction w86_instruction_clc;
+w86_instruction w86_instruction_cmc;
+w86_instruction w86_instruction_stc;
+w86_instruction w86_instruction_cli;
+w86_instruction w86_instruction_sti;
+w86_instruction w86_instruction_cld;
+w86_instruction w86_instruction_std;
+
+w86_instruction w86_instruction_hlt;
+
 #ifdef __cplusplus
 }
 #endif

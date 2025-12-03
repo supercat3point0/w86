@@ -1,5 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import W86, {} from "./w86.js";
+function cpuRun(run) {
+    emulator.execState.run = run;
+    const execState = emulator.ui.elements.namedItem("exec-state");
+    if (run) {
+        execState.value = `Running${emulator.execState.halt ? " (Halted)" : ""}`;
+        execState.classList.replace("status-stopped", "status-running");
+    }
+    else {
+        execState.value = `Stopped${emulator.execState.halt ? " (Halted)" : ""}`;
+        execState.classList.replace("status-running", "status-stopped");
+    }
+}
+function cpuHalt(halt) {
+    emulator.execState.halt = halt;
+    emulator.ui.elements.namedItem("exec-state").value = `${emulator.execState.run ? "Running" : "Stopped"}${halt ? " (Halted)" : ""}`;
+}
 function updateBaseAddress(a) {
     if (a < 0x00000)
         a = 0x00000;
@@ -43,11 +59,13 @@ function updateDisplay() {
     updateMemoryView();
 }
 function stepEmulator() {
+    if (emulator.execState.halt)
+        return;
     switch (w86.w86CpuStep(emulator.state)) {
         case w86.W86Status.SUCCESS:
             break;
         case w86.W86Status.HALT:
-            console.info("Processor halted");
+            cpuHalt(true);
             break;
         case w86.W86Status.UNDEFINED_OPCODE:
             console.error(`Undefined opcode at 0x${(((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)).toString(16).toUpperCase().padStart(5, "0")}`);
@@ -63,6 +81,8 @@ function stepEmulator() {
     }
 }
 function resetEmulator() {
+    cpuRun(false);
+    cpuHalt(false);
     emulator.state.registers = {
         ax: 0x0000,
         bx: 0x0000,
@@ -104,10 +124,13 @@ function resetEmulator() {
 const w86 = await W86();
 const emulator = {
     state: new w86.W86CpuState(),
-    memorySize: 1048576,
     memory: new Uint8Array(),
-    _rom: new ArrayBuffer(1048576),
     rom: new Uint8Array(),
+    execState: {
+        run: false,
+        halt: false
+    },
+    memorySize: 1048576,
     baseAddress: 0x00000,
     ui: document.getElementById("emulator")
 };

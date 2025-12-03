@@ -2,6 +2,38 @@
 
 import W86, { type MainModule, type W86CpuState } from "./w86.js"
 
+interface ExecState {
+  run: boolean;
+  halt: boolean;
+}
+
+interface Emulator {
+  readonly state: W86CpuState;
+  memory: Uint8Array;
+  rom: Uint8Array;
+  execState: ExecState;
+  readonly memorySize: number;
+  baseAddress: number;
+  readonly ui: HTMLFormElement;
+}
+
+function cpuRun(run: boolean): void {
+  emulator.execState.run = run;
+  const execState: HTMLOutputElement = <HTMLOutputElement> emulator.ui.elements.namedItem("exec-state");
+  if (run) {
+    execState.value = `Running${emulator.execState.halt ? " (Halted)" : ""}`;
+    execState.classList.replace("status-stopped", "status-running");
+  } else {
+    execState.value = `Stopped${emulator.execState.halt ? " (Halted)" : ""}`;
+    execState.classList.replace("status-running", "status-stopped");
+  }
+}
+
+function cpuHalt(halt: boolean): void {
+  emulator.execState.halt = halt;
+  (<HTMLOutputElement> emulator.ui.elements.namedItem("exec-state")).value = `${emulator.execState.run ? "Running" : "Stopped"}${halt ? " (Halted)" : ""}`;
+}
+
 function updateBaseAddress(a: number): void {
   if (a < 0x00000) a = 0x00000;
   if (a > 0xfff00) a = 0xfff00;
@@ -49,12 +81,13 @@ function updateDisplay(): void {
 }
 
 function stepEmulator(): void {
+  if (emulator.execState.halt) return;
   switch (w86.w86CpuStep(emulator.state)) {
   case w86.W86Status.SUCCESS:
     break;
 
   case w86.W86Status.HALT:
-    console.info("Processor halted");
+    cpuHalt(true);
     break;
 
   case w86.W86Status.UNDEFINED_OPCODE:
@@ -75,6 +108,8 @@ function stepEmulator(): void {
 }
 
 function resetEmulator(): void {
+  cpuRun(false);
+  cpuHalt(false);
   emulator.state.registers = {
     ax: 0x0000,
     bx: 0x0000,
@@ -117,20 +152,15 @@ function resetEmulator(): void {
 
 const w86: MainModule = await W86();
 
-const emulator: {
-  readonly state: W86CpuState;
-  readonly memorySize: number;
-  memory: Uint8Array;
-  readonly _rom: ArrayBuffer;
-  rom: Uint8Array;
-  baseAddress: number;
-  readonly ui: HTMLFormElement;
-} = {
+const emulator: Emulator = {
   state: new w86.W86CpuState(),
-  memorySize: 1048576,
   memory: new Uint8Array(),
-  _rom: new ArrayBuffer(1048576),
   rom: new Uint8Array(),
+  execState: {
+    run: false,
+    halt: false
+  },
+  memorySize: 1048576,
   baseAddress: 0x00000,
   ui: <HTMLFormElement> document.getElementById("emulator")
 };

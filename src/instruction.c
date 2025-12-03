@@ -222,9 +222,17 @@ enum w86_status w86_instruction_mov(struct w86_cpu_state* state, uint16_t offset
     state->registers.di = w86_get_word(state, state->registers.cs, offset + 1);
     break;
 
-  case 0xc6:
-  case 0xc7:
-    return W86_STATUS_UNIMPLEMENTED_OPCODE;
+  case 0xc6: // imm8 -> r/m8
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    if (info.reg != 0b000) return W86_STATUS_INVALID_OPERATION;
+    w86_modrm_set_rm_byte(state, info, w86_get_byte(state, state->registers.cs, offset + 2 + info.size));
+    break;
+
+  case 0xc7: // imm16 -> r/m16
+    info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    if (info.reg != 0b000) return W86_STATUS_INVALID_OPERATION;
+    w86_modrm_set_rm_word(state, info, w86_get_word(state, state->registers.cs, offset + 2 + info.size));
+    break;
 
   default:
     return W86_STATUS_INVALID_OPERATION;
@@ -815,7 +823,7 @@ enum w86_status w86_instruction_ret(struct w86_cpu_state* state, uint16_t offset
   return W86_STATUS_SUCCESS;
 }
 
-enum w86_status w86_instruction_jmp(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+enum w86_status w86_instruction_jmp(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes prefixes) {
   switch (w86_get_byte(state, state->registers.cs, offset)) {
   case 0xe9: // near jump
     state->registers.ip += (int16_t) w86_get_word(state, state->registers.cs, offset + 1) + 3;
@@ -831,7 +839,14 @@ enum w86_status w86_instruction_jmp(struct w86_cpu_state* state, uint16_t offset
     break;
 
   case 0xff: // indirect jump
-    return W86_STATUS_UNIMPLEMENTED_OPCODE;
+    struct w86_modrm_info info = w86_modrm_parse(state, offset + 1, prefixes.segment);
+    if ((info.reg != 0b100 && info.reg != 0b101) || (info.reg == 0b101 && info.rm_is_reg)) return W86_STATUS_INVALID_OPERATION;
+    w86_modrm_get_rm_word(state, info, &state->registers.ip);
+    if (info.reg == 0b101) {
+      info.address += 2;
+      w86_modrm_get_rm_word(state, info, &state->registers.cs);
+    }
+    break;
 
   default:
     return W86_STATUS_INVALID_OPERATION;

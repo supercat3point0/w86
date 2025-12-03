@@ -202,10 +202,12 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
     case 0b001: // dec
       return w86_instruction_dec(state, offset, prefixes);
 
+    case 0b100: // jmp
+    case 0b101:
+      return w86_instruction_jmp(state, offset, prefixes);
+
     case 0b010:
     case 0b011:
-    case 0b100:
-    case 0b101:
     case 0b110:
       return W86_STATUS_UNIMPLEMENTED_OPCODE;
 

@@ -1,21 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import W86, {} from "./w86.js";
-function cpuRun(run) {
-    emulator.execState.run = run;
-    const execState = emulator.ui.elements.namedItem("exec-state");
-    if (run) {
-        execState.value = `Running${emulator.execState.halt ? " (Halted)" : ""}`;
-        execState.classList.replace("status-stopped", "status-running");
-    }
-    else {
-        execState.value = `Stopped${emulator.execState.halt ? " (Halted)" : ""}`;
-        execState.classList.replace("status-running", "status-stopped");
-    }
-}
-function cpuHalt(halt) {
-    emulator.execState.halt = halt;
-    emulator.ui.elements.namedItem("exec-state").value = `${emulator.execState.run ? "Running" : "Stopped"}${halt ? " (Halted)" : ""}`;
-}
 function updateBaseAddress(a) {
     if (a < 0x00000)
         a = 0x00000;
@@ -41,6 +25,21 @@ function updateMemoryView() {
     }
 }
 function updateDisplay() {
+    const execState = emulator.ui.elements.namedItem("exec-state");
+    if (emulator.execState.run) {
+        emulator.ui.elements.namedItem("run").classList.add("hidden");
+        emulator.ui.elements.namedItem("stop").classList.remove("hidden");
+        execState.classList.replace("status-stop", "status-run");
+    }
+    else {
+        emulator.ui.elements.namedItem("run").classList.remove("hidden");
+        emulator.ui.elements.namedItem("stop").classList.add("hidden");
+        execState.classList.replace("status-run", "status-stop");
+        execState.classList.replace("status-halt", "status-stop");
+    }
+    if (emulator.execState.halt)
+        execState.classList.replace("status-run", "status-halt");
+    execState.value = `${emulator.execState.run ? "Running" : "Stopped"}${emulator.execState.halt ? " (Halted)" : ""}`;
     emulator.ui.elements.namedItem("ax").value = emulator.state.registers.ax.toString(16).toUpperCase().padStart(4, "0");
     emulator.ui.elements.namedItem("bx").value = emulator.state.registers.bx.toString(16).toUpperCase().padStart(4, "0");
     emulator.ui.elements.namedItem("cx").value = emulator.state.registers.cx.toString(16).toUpperCase().padStart(4, "0");
@@ -54,8 +53,9 @@ function updateDisplay() {
     emulator.ui.elements.namedItem("es").value = emulator.state.registers.es.toString(16).toUpperCase().padStart(4, "0");
     emulator.ui.elements.namedItem("ss").value = emulator.state.registers.ss.toString(16).toUpperCase().padStart(4, "0");
     emulator.ui.elements.namedItem("ip").value = emulator.state.registers.ip.toString(16).toUpperCase().padStart(4, "0");
-    for (let i = 0; i < 16; i++)
+    for (let i = 0; i < 16; i++) {
         emulator.ui.elements.namedItem("flags" + i.toString()).checked = (emulator.state.registers.flags >> i & 1) !== 0;
+    }
     updateMemoryView();
 }
 function stepEmulator() {
@@ -65,7 +65,7 @@ function stepEmulator() {
         case w86.W86Status.SUCCESS:
             break;
         case w86.W86Status.HALT:
-            cpuHalt(true);
+            emulator.execState.halt = true;
             break;
         case w86.W86Status.UNDEFINED_OPCODE:
             console.error(`Undefined opcode at 0x${(((emulator.state.registers.cs << 4) + emulator.state.registers.ip) % (1 << 20)).toString(16).toUpperCase().padStart(5, "0")}`);
@@ -80,9 +80,17 @@ function stepEmulator() {
             console.error("Unknown error");
     }
 }
+function runEmulator() {
+    stepEmulator();
+    updateDisplay();
+    if (emulator.execState.run)
+        setTimeout(runEmulator, 5);
+}
 function resetEmulator() {
-    cpuRun(false);
-    cpuHalt(false);
+    emulator.execState = {
+        run: false,
+        halt: false
+    };
     emulator.state.registers = {
         ax: 0x0000,
         bx: 0x0000,
@@ -153,7 +161,16 @@ emulator.state.registers = {
 emulator.state.memory = w86._malloc(emulator.memorySize);
 emulator.memory = w86.HEAPU8.subarray(emulator.state.memory, emulator.state.memory + emulator.memorySize).fill(0);
 emulator.rom = new Uint8Array(new ArrayBuffer(emulator.memorySize));
+emulator.ui.elements.namedItem("run").addEventListener("click", () => {
+    emulator.execState.run = true;
+    setTimeout(runEmulator, 5);
+});
+emulator.ui.elements.namedItem("stop").addEventListener("click", () => {
+    emulator.execState.run = false;
+    updateDisplay();
+});
 emulator.ui.elements.namedItem("step").addEventListener("click", () => {
+    emulator.execState.run = false;
     stepEmulator();
     updateDisplay();
 });

@@ -1,5 +1,9 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+.hidden {
+  display: none;
+}
+
 #emulator,
 #ipflags,
 #memory {
@@ -63,12 +67,19 @@ input[type="text"] {
   text-align: right;
 }
 
-.status-running {
-  color: #00C000;
+.status-run {
+  color: #00dd00;
+  font-weight: bold;
 }
 
-.status-stopped {
-  color: #ff0000;
+.status-halt {
+  color: #dddd00;
+  font-weight: bold;
+}
+
+.status-stop {
+  color: #dd0000;
+  font-weight: bold;
 }
 
 body {

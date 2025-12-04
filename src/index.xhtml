@@ -12,10 +12,11 @@
     <form id="emulator">
       <div>
         <button type="button" name="run">Run</button>
+        <button type="button" name="stop" class="hidden">Stop</button>
         <button type="button" name="step">Step</button>
         <button type="button" name="reset">Reset</button>
         <input type="file" name="rom" autocomplete="off" />
-        <output name="exec-state" class="status-stopped">Stopped</output>
+        <output name="exec-state" class="status-stop">Stopped</output>
       </div>
       <div id="registers">
         <table>

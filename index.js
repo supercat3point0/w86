@@ -81,10 +81,11 @@ function stepEmulator() {
     }
 }
 function runEmulator() {
-    stepEmulator();
-    updateDisplay();
-    if (emulator.execState.run)
+    if (emulator.execState.run) {
+        stepEmulator();
+        updateDisplay();
         setTimeout(runEmulator, 5);
+    }
 }
 function resetEmulator() {
     emulator.execState = {
@@ -107,6 +108,9 @@ function resetEmulator() {
         ip: 0x0000,
         flags: 0x0000
     };
+}
+function restartEmulator() {
+    resetEmulator();
     emulator.memory.set(emulator.rom);
 }
 {
@@ -178,10 +182,14 @@ emulator.ui.elements.namedItem("reset").addEventListener("click", () => {
     resetEmulator();
     updateDisplay();
 });
+emulator.ui.elements.namedItem("restart").addEventListener("click", () => {
+    restartEmulator();
+    updateDisplay();
+});
 emulator.ui.elements.namedItem("rom").addEventListener("change", (event) => {
     event.currentTarget.files?.item(0)?.arrayBuffer().then((buf) => {
         emulator.rom.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
-        resetEmulator();
+        restartEmulator();
         updateDisplay();
     });
 });

@@ -107,9 +107,11 @@ function stepEmulator(): void {
 }
 
 function runEmulator(): void {
-  stepEmulator();
-  updateDisplay();
-  if (emulator.execState.run) setTimeout(runEmulator, 5);
+  if (emulator.execState.run) {
+    stepEmulator();
+    updateDisplay();
+    setTimeout(runEmulator, 5);
+  }
 }
 
 function resetEmulator(): void {
@@ -133,6 +135,10 @@ function resetEmulator(): void {
     ip: 0x0000,
     flags: 0x0000
   };
+}
+
+function restartEmulator(): void {
+  resetEmulator();
   emulator.memory.set(emulator.rom);
 }
 
@@ -212,10 +218,15 @@ emulator.rom = new Uint8Array(new ArrayBuffer(emulator.memorySize));
   updateDisplay();
 });
 
+(<Element> emulator.ui.elements.namedItem("restart")).addEventListener("click", (): void => {
+  restartEmulator();
+  updateDisplay();
+});
+
 (<Element> emulator.ui.elements.namedItem("rom")).addEventListener("change", (event: Event): void => {
   (<HTMLInputElement> event.currentTarget).files?.item(0)?.arrayBuffer().then((buf: ArrayBuffer): void => {
     emulator.rom.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
-    resetEmulator();
+    restartEmulator();
     updateDisplay();
   });
 });

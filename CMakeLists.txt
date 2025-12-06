@@ -19,6 +19,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(w86)
 
+set_target_properties(w86 PROPERTIES ADDITIONAL_CLEAN_FILES "${CMAKE_BINARY_DIR}/w86.d.ts")
+
 target_link_libraries(w86 "embind")
 
 target_compile_options(w86 PRIVATE "-Wall" "-Wextra" "-Wpedantic")

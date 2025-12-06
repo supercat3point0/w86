@@ -1,10 +1,10 @@
 {
-  "include": [ "src/**/*" ],
+  "include": [ "ts/**/*" ],
 
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDirs": [ "src", "build" ],
+    "rootDirs": [ "ts", "build" ],
     "outDir": "dist",
 
     // Environment Settings
@@ -18,7 +18,7 @@
     // and npm install -D @types/node
 
     // Other Outputs
-    // "sourceMap": true,
+    "sourceMap": true,
     // "declaration": true,
     // "declarationMap": true,
 

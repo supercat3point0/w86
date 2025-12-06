@@ -14,10 +14,10 @@
   "author": "Bennett Jann",
   "type": "module",
   "scripts": {
-    "configure": "emcmake cmake -B build",
-    "build": "cmake --build build && tsc",
-    "postbuild": "cp build/w86.wasm build/w86.js src/index.css src/index.xhtml dist",
-    "gh-pages": "cp dist/w86.wasm dist/w86.js dist/index.js dist/index.css dist/index.xhtml gh-pages"
+    "configure": "emcmake cmake -B build && cmake -S test -B build/test",
+    "build": "cmake --build build && cmake --build build/test && tsc",
+    "postbuild": "mkdir -p dist dist/test && cp build/w86.wasm build/w86.js ts/index.css ts/index.xhtml dist && cp build/test/fibonacci.bin -t dist/test",
+    "gh-pages": "mkdir -p gh-pages && cp dist/w86.wasm dist/w86.js dist/index.js dist/index.css dist/index.xhtml test gh-pages"
   },
   "devDependencies": {
     "typescript": "^5.9.2"

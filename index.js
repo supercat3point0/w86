@@ -221,3 +221,4 @@ emulator.ui.elements.namedItem("last-address").addEventListener("click", () => {
     updateBaseAddress(0xfff00);
     updateMemoryView();
 });
+//# sourceMappingURL=index.js.map

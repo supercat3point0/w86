@@ -12,23 +12,24 @@ _start:
         movw %ax, %ss
         movw $0xfff0, %sp
 
-        movw $8, %di
-        call fibonacci
+        movw $0, %si
+        movw %si, %dx
+
+1:      movb hello(%si), %al
+        outb %al, %dx
+        incw %si
+        incw %dx
+        cmpw $len, %dx
+        jne 1b
 
         cli
 1:      hlt
         jmp 1b
 
-fibonacci:
-        movw $0, %ax
-        movw $1, %dx
-        cmpw $0, %di
-        jz 2f
-1:      addw %dx, %ax
-        xchgw %dx, %ax
-        decw %di
-        jnz 1b      
-2:      ret
+        .section .rodata
+hello:
+        .ascii "Hello, world!\n"
+        .set len, . - hello
 
         .section .text.init
         ljmp $0x0000, $_start

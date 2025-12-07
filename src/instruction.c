@@ -333,6 +333,75 @@ enum w86_status w86_instruction_xchg(struct w86_cpu_state* state, uint16_t offse
   return W86_STATUS_SUCCESS;
 }
 
+enum w86_status w86_instruction_in(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  uint8_t first_byte = w86_get_byte(state, state->registers.cs, offset);
+
+  switch (first_byte) {
+  case 0xe4: // io8(imm8) -> al
+    state->registers.ax &= 0xff00;
+    state->registers.ax |= w86_in_byte(state, w86_get_byte(state, state->registers.cs, offset + 1));
+    break;
+
+  case 0xe5: // io16(imm8) -> ax
+    state->registers.ax = w86_in_word(state, w86_get_byte(state, state->registers.cs, offset + 1));
+    break;
+
+  case 0xec: // io8(dx) -> al
+    state->registers.ax = w86_in_byte(state, state->registers.dx);
+    break;
+
+  case 0xed: // io16(dx) -> ax
+    state->registers.ax = w86_in_word(state, state->registers.dx);
+    break;
+
+  default:
+    return W86_STATUS_INVALID_OPERATION;
+  }
+
+  if (first_byte == 0xe4
+   || first_byte == 0xe5) {
+    state->registers.ip = offset + 2;
+  } else {
+    state->registers.ip = offset + 1;
+  }
+
+  return W86_STATUS_SUCCESS;
+}
+
+enum w86_status w86_instruction_out(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes) {
+  uint8_t first_byte = w86_get_byte(state, state->registers.cs, offset);
+
+  switch (first_byte) {
+  case 0xe6: // al -> io8(imm8)
+    w86_out_byte(state, w86_get_byte(state, state->registers.cs, offset + 1), state->registers.ax);
+    break;
+
+  case 0xe7: // ax -> io16(imm8)
+    w86_out_word(state, w86_get_byte(state, state->registers.cs, offset + 1), state->registers.ax);
+    break;
+
+  case 0xee: // al -> io8(dx)
+    w86_out_byte(state, state->registers.dx, state->registers.ax);
+    break;
+
+  case 0xef: // ax -> io16(dx)
+    w86_out_word(state, state->registers.dx, state->registers.ax);
+    break;
+
+  default:
+    return W86_STATUS_INVALID_OPERATION;
+  }
+
+  if (first_byte == 0xe6
+   || first_byte == 0xe7) {
+    state->registers.ip = offset + 2;
+  } else {
+    state->registers.ip = offset + 1;
+  }
+
+  return W86_STATUS_SUCCESS;
+}
+
 // arithmetic functions should probably be combined into one, but i don't feel like doing that
 
 enum w86_status w86_instruction_add(struct w86_cpu_state* state, uint16_t offset, struct w86_instruction_prefixes prefixes) {

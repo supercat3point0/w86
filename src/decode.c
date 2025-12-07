@@ -61,6 +61,18 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0x97:
     return w86_instruction_xchg(state, offset, prefixes);
 
+  case 0xe4: // in
+  case 0xe5:
+  case 0xec:
+  case 0xed:
+    return w86_instruction_in(state, offset, prefixes);
+
+  case 0xe6: // out
+  case 0xe7:
+  case 0xee:
+  case 0xef:
+    return w86_instruction_out(state, offset, prefixes);
+
   case 0x00: // add
   case 0x01:
   case 0x02:
@@ -320,14 +332,6 @@ enum w86_status w86_decode(struct w86_cpu_state* state) {
   case 0xe1:
   case 0xe2:
   case 0xe3:
-  case 0xe4:
-  case 0xe5:
-  case 0xe6:
-  case 0xe7:
-  case 0xec:
-  case 0xed:
-  case 0xee:
-  case 0xef:
   case 0xf0:
   case 0xf2:
   case 0xf3:

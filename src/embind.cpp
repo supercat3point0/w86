@@ -24,11 +24,16 @@ EMSCRIPTEN_BINDINGS(w86) {
     .field("ip", &w86_register_file::ip)
     .field("flags", &w86_register_file::flags);
 
+  value_object<w86_io_ports>("W86IoPorts")
+    .field("reads", &w86_io_ports::reads)
+    .field("writes", &w86_io_ports::writes);
+
   class_<w86_cpu_state>("W86CpuState")
     .constructor<>()
     .property("registers", &w86_cpu_state::registers)
-    .property("memory", &w86_cpu_state::memory);
-  
+    .property("memory", &w86_cpu_state::memory)
+    .property("io", &w86_cpu_state::io);
+
   enum_<w86_status>("W86Status")
     .value("SUCCESS", W86_STATUS_SUCCESS)
     .value("HALT", W86_STATUS_HALT)

@@ -17,10 +17,18 @@ extern "C" {
 #define W86_BOUND_ADDRESS(address) ((address) % (1 << W86_ADDRESS_SIZE))
 #define W86_REAL_ADDRESS(segment, pointer) W86_BOUND_ADDRESS(((segment) % (1 << W86_REAL_SEGMENT_SIZE) << 4) + (pointer) % (1 << W86_REAL_POINTER_SIZE))
 
+#define W86_IO_PORT_SIZE 16
+#define W86_BOUND_IO_PORT(port) ((port) % (1 << W86_IO_PORT_SIZE))
+
 uint8_t w86_get_byte(struct w86_cpu_state* state, uint16_t segment, uint16_t pointer);
 void w86_set_byte(struct w86_cpu_state* state, uint16_t segment, uint16_t pointer, uint8_t value);
 uint16_t w86_get_word(struct w86_cpu_state* state, uint16_t segment, uint16_t pointer);
 void w86_set_word(struct w86_cpu_state* state, uint16_t segment, uint16_t pointer, uint16_t value);
+
+uint8_t w86_in_byte(struct w86_cpu_state* state, uint16_t port);
+void w86_out_byte(struct w86_cpu_state* state, uint16_t port, uint8_t value);
+uint16_t w86_in_word(struct w86_cpu_state* state, uint16_t port);
+void w86_out_word(struct w86_cpu_state* state, uint16_t port, uint16_t value);
 
 #ifdef __cplusplus
 }

@@ -26,6 +26,16 @@ struct w86_register_file {
   uint16_t flags;
 };
 
+struct w86_io_ports {
+#ifdef EMBIND
+  intptr_t reads;
+  intptr_t writes;
+#else
+  uint8_t* reads;
+  uint8_t* writes;
+#endif
+};
+
 struct w86_cpu_state {
   struct w86_register_file registers;
 #ifdef EMBIND // embind doesn't support pointers to primitive types, so we have cheat a little
@@ -33,6 +43,7 @@ struct w86_cpu_state {
 #else
   uint8_t* memory;
 #endif
+  struct w86_io_ports io;
 };
 
 enum w86_status {

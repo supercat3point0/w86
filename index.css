@@ -6,7 +6,7 @@
 
 #emulator,
 #ipflags,
-#memory {
+.view {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -23,9 +23,19 @@
 
 #registers > *,
 #ipflags > *,
-#memory > * {
+.view > * {
   width: max-content;
   height: max-content;
+}
+
+#views {
+  display: grid;
+  grid-template-columns: min-content min-content;
+  gap: 5px;
+}
+
+.view-label {
+  margin-bottom: 0px;
 }
 
 table {
@@ -43,7 +53,7 @@ th {
   font-weight: bold;
 }
 
-table#memory-view {
+.view table {
   border: 1px solid;
 
   th,

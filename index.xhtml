@@ -9,6 +9,7 @@
     <script src="index.js" type="module"></script>
   </head>
   <body>
+    <h1>w86 - An 8086 emulator in your browser</h1>
     <form id="emulator">
       <div>
         <button type="button" name="run">Run</button>
@@ -16,6 +17,11 @@
         <button type="button" name="step">Step</button>
         <button type="button" name="reset">Reset</button>
         <button type="button" name="restart">Restart</button>
+        <select name="example" autocomplete="off">
+          <option value="" disabled="" selected="">Select an example</option>
+          <option value="hello">Hello, world!</option>
+          <option value="fibonacci">Fibonacci sequence</option>
+        </select>
         <input type="file" name="rom" autocomplete="off" />
         <output name="exec-state" class="status-stop">Stopped</output>
       </div>
@@ -146,90 +152,351 @@
           </table>
         </div>
       </div>
-      <div id="memory">
-        <div>
-          <label>
-            Base address:
-            <input type="text" name="base-address" autocomplete="off" required="" size="5" maxlength="5" pattern="[\dA-Fa-f]*" placeholder="00000" value="00000" />
-          </label>
-          <button type="button" name="first-address">&lt;&lt;</button>
-          <button type="button" name="prev-address">&lt;</button>
-          <button type="button" name="next-address">&gt;</button>
-          <button type="button" name="last-address">&gt;&gt;</button>
+      <div id="views">
+        <div class="view">
+          <h3 class="view-label">Memory</h3>
+          <div>
+            <label>
+              Base address:
+              <input type="text" name="memory-base" autocomplete="off" required="" size="5" maxlength="5" pattern="[\dA-Fa-f]*" placeholder="00000" value="00000" />
+            </label>
+            <button type="button" name="memory-first">&lt;&lt;</button>
+            <button type="button" name="memory-prev">&lt;</button>
+            <button type="button" name="memory-next">&gt;</button>
+            <button type="button" name="memory-last">&gt;&gt;</button>
+          </div>
+          <table id="memory-view">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">0</th>
+                <th scope="col">1</th>
+                <th scope="col">2</th>
+                <th scope="col">3</th>
+                <th scope="col">4</th>
+                <th scope="col">5</th>
+                <th scope="col">6</th>
+                <th scope="col">7</th>
+                <th scope="col">8</th>
+                <th scope="col">9</th>
+                <th scope="col">A</th>
+                <th scope="col">B</th>
+                <th scope="col">C</th>
+                <th scope="col">D</th>
+                <th scope="col">E</th>
+                <th scope="col">F</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">00000</th>
+              </tr>
+              <tr>
+                <th scope="row">00010</th>
+              </tr>
+              <tr>
+                <th scope="row">00020</th>
+              </tr>
+              <tr>
+                <th scope="row">00030</th>
+              </tr>
+              <tr>
+                <th scope="row">00040</th>
+              </tr>
+              <tr>
+                <th scope="row">00050</th>
+              </tr>
+              <tr>
+                <th scope="row">00060</th>
+              </tr>
+              <tr>
+                <th scope="row">00070</th>
+              </tr>
+              <tr>
+                <th scope="row">00080</th>
+              </tr>
+              <tr>
+                <th scope="row">00090</th>
+              </tr>
+              <tr>
+                <th scope="row">000A0</th>
+              </tr>
+              <tr>
+                <th scope="row">000B0</th>
+              </tr>
+              <tr>
+                <th scope="row">000C0</th>
+              </tr>
+              <tr>
+                <th scope="row">000D0</th>
+              </tr>
+              <tr>
+                <th scope="row">000E0</th>
+              </tr>
+              <tr>
+                <th scope="row">000F0</th>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <table id="memory-view">
-          <thead>
-            <tr>
-              <th scope="col"></th>
-              <th scope="col">0</th>
-              <th scope="col">1</th>
-              <th scope="col">2</th>
-              <th scope="col">3</th>
-              <th scope="col">4</th>
-              <th scope="col">5</th>
-              <th scope="col">6</th>
-              <th scope="col">7</th>
-              <th scope="col">8</th>
-              <th scope="col">9</th>
-              <th scope="col">A</th>
-              <th scope="col">B</th>
-              <th scope="col">C</th>
-              <th scope="col">D</th>
-              <th scope="col">E</th>
-              <th scope="col">F</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">00000</th>
-            </tr>
-            <tr>
-              <th scope="row">00010</th>
-            </tr>
-            <tr>
-              <th scope="row">00020</th>
-            </tr>
-            <tr>
-              <th scope="row">00030</th>
-            </tr>
-            <tr>
-              <th scope="row">00040</th>
-            </tr>
-            <tr>
-              <th scope="row">00050</th>
-            </tr>
-            <tr>
-              <th scope="row">00060</th>
-            </tr>
-            <tr>
-              <th scope="row">00070</th>
-            </tr>
-            <tr>
-              <th scope="row">00080</th>
-            </tr>
-            <tr>
-              <th scope="row">00090</th>
-            </tr>
-            <tr>
-              <th scope="row">000A0</th>
-            </tr>
-            <tr>
-              <th scope="row">000B0</th>
-            </tr>
-            <tr>
-              <th scope="row">000C0</th>
-            </tr>
-            <tr>
-              <th scope="row">000D0</th>
-            </tr>
-            <tr>
-              <th scope="row">000E0</th>
-            </tr>
-            <tr>
-              <th scope="row">000F0</th>
-            </tr>
-          </tbody>
-        </table>
+        <div class="view">
+          <h3 class="view-label">Program</h3>
+          <div>
+            <label>
+              Base address:
+              <input type="text" name="program-base" autocomplete="off" required="" size="5" maxlength="5" pattern="[\dA-Fa-f]*" placeholder="00000" value="00000" />
+            </label>
+            <button type="button" name="program-first">&lt;&lt;</button>
+            <button type="button" name="program-prev">&lt;</button>
+            <button type="button" name="program-next">&gt;</button>
+            <button type="button" name="program-last">&gt;&gt;</button>
+          </div>
+          <table id="program-view">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">0</th>
+                <th scope="col">1</th>
+                <th scope="col">2</th>
+                <th scope="col">3</th>
+                <th scope="col">4</th>
+                <th scope="col">5</th>
+                <th scope="col">6</th>
+                <th scope="col">7</th>
+                <th scope="col">8</th>
+                <th scope="col">9</th>
+                <th scope="col">A</th>
+                <th scope="col">B</th>
+                <th scope="col">C</th>
+                <th scope="col">D</th>
+                <th scope="col">E</th>
+                <th scope="col">F</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">00000</th>
+              </tr>
+              <tr>
+                <th scope="row">00010</th>
+              </tr>
+              <tr>
+                <th scope="row">00020</th>
+              </tr>
+              <tr>
+                <th scope="row">00030</th>
+              </tr>
+              <tr>
+                <th scope="row">00040</th>
+              </tr>
+              <tr>
+                <th scope="row">00050</th>
+              </tr>
+              <tr>
+                <th scope="row">00060</th>
+              </tr>
+              <tr>
+                <th scope="row">00070</th>
+              </tr>
+              <tr>
+                <th scope="row">00080</th>
+              </tr>
+              <tr>
+                <th scope="row">00090</th>
+              </tr>
+              <tr>
+                <th scope="row">000A0</th>
+              </tr>
+              <tr>
+                <th scope="row">000B0</th>
+              </tr>
+              <tr>
+                <th scope="row">000C0</th>
+              </tr>
+              <tr>
+                <th scope="row">000D0</th>
+              </tr>
+              <tr>
+                <th scope="row">000E0</th>
+              </tr>
+              <tr>
+                <th scope="row">000F0</th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="view">
+          <h3 class="view-label">I/O Ports (Reads)</h3>
+          <div>
+            <label>
+              Base address:
+              <input type="text" name="io-reads-base" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" />
+            </label>
+            <button type="button" name="io-reads-first">&lt;&lt;</button>
+            <button type="button" name="io-reads-prev">&lt;</button>
+            <button type="button" name="io-reads-next">&gt;</button>
+            <button type="button" name="io-reads-last">&gt;&gt;</button>
+          </div>
+          <table id="io-reads-view">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">0</th>
+                <th scope="col">1</th>
+                <th scope="col">2</th>
+                <th scope="col">3</th>
+                <th scope="col">4</th>
+                <th scope="col">5</th>
+                <th scope="col">6</th>
+                <th scope="col">7</th>
+                <th scope="col">8</th>
+                <th scope="col">9</th>
+                <th scope="col">A</th>
+                <th scope="col">B</th>
+                <th scope="col">C</th>
+                <th scope="col">D</th>
+                <th scope="col">E</th>
+                <th scope="col">F</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">0000</th>
+              </tr>
+              <tr>
+                <th scope="row">0010</th>
+              </tr>
+              <tr>
+                <th scope="row">0020</th>
+              </tr>
+              <tr>
+                <th scope="row">0030</th>
+              </tr>
+              <tr>
+                <th scope="row">0040</th>
+              </tr>
+              <tr>
+                <th scope="row">0050</th>
+              </tr>
+              <tr>
+                <th scope="row">0060</th>
+              </tr>
+              <tr>
+                <th scope="row">0070</th>
+              </tr>
+              <tr>
+                <th scope="row">0080</th>
+              </tr>
+              <tr>
+                <th scope="row">0090</th>
+              </tr>
+              <tr>
+                <th scope="row">00A0</th>
+              </tr>
+              <tr>
+                <th scope="row">00B0</th>
+              </tr>
+              <tr>
+                <th scope="row">00C0</th>
+              </tr>
+              <tr>
+                <th scope="row">00D0</th>
+              </tr>
+              <tr>
+                <th scope="row">00E0</th>
+              </tr>
+              <tr>
+                <th scope="row">00F0</th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="view">
+          <h3 class="view-label">I/O Ports (Writes)</h3>
+          <div>
+            <label>
+              Base address:
+              <input type="text" name="io-writes-base" autocomplete="off" required="" size="4" maxlength="4" pattern="[\dA-Fa-f]*" placeholder="0000" value="0000" />
+            </label>
+            <button type="button" name="io-writes-first">&lt;&lt;</button>
+            <button type="button" name="io-writes-prev">&lt;</button>
+            <button type="button" name="io-writes-next">&gt;</button>
+            <button type="button" name="io-writes-last">&gt;&gt;</button>
+          </div>
+          <table id="io-writes-view">
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col">0</th>
+                <th scope="col">1</th>
+                <th scope="col">2</th>
+                <th scope="col">3</th>
+                <th scope="col">4</th>
+                <th scope="col">5</th>
+                <th scope="col">6</th>
+                <th scope="col">7</th>
+                <th scope="col">8</th>
+                <th scope="col">9</th>
+                <th scope="col">A</th>
+                <th scope="col">B</th>
+                <th scope="col">C</th>
+                <th scope="col">D</th>
+                <th scope="col">E</th>
+                <th scope="col">F</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">0000</th>
+              </tr>
+              <tr>
+                <th scope="row">0010</th>
+              </tr>
+              <tr>
+                <th scope="row">0020</th>
+              </tr>
+              <tr>
+                <th scope="row">0030</th>
+              </tr>
+              <tr>
+                <th scope="row">0040</th>
+              </tr>
+              <tr>
+                <th scope="row">0050</th>
+              </tr>
+              <tr>
+                <th scope="row">0060</th>
+              </tr>
+              <tr>
+                <th scope="row">0070</th>
+              </tr>
+              <tr>
+                <th scope="row">0080</th>
+              </tr>
+              <tr>
+                <th scope="row">0090</th>
+              </tr>
+              <tr>
+                <th scope="row">00A0</th>
+              </tr>
+              <tr>
+                <th scope="row">00B0</th>
+              </tr>
+              <tr>
+                <th scope="row">00C0</th>
+              </tr>
+              <tr>
+                <th scope="row">00D0</th>
+              </tr>
+              <tr>
+                <th scope="row">00E0</th>
+              </tr>
+              <tr>
+                <th scope="row">00F0</th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </form>
   </body>

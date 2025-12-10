@@ -28,6 +28,71 @@ interface Emulator {
   readonly ui: HTMLFormElement;
 }
 
+function updateRegister(event: Event): void {
+  const e: HTMLInputElement = <HTMLInputElement> event.currentTarget;
+  if (!e.checkValidity()) {
+    updateDisplay();
+    return;
+  }
+
+  // we have to do it like this because value_objects are immutable
+  switch (e.name) {
+  case "ax":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { ax: parseInt(e.value, 16) });
+    break;
+
+  case "bx":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { bx: parseInt(e.value, 16) });
+    break;
+
+  case "cx":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { cx: parseInt(e.value, 16) });
+    break;
+
+  case "dx":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { dx: parseInt(e.value, 16) });
+    break;
+
+  case "si":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { si: parseInt(e.value, 16) });
+    break;
+
+  case "di":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { di: parseInt(e.value, 16) });
+    break;
+
+  case "sp":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { sp: parseInt(e.value, 16) });
+    break;
+
+  case "bp":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { bp: parseInt(e.value, 16) });
+    break;
+
+  case "cs":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { cs: parseInt(e.value, 16) });
+    break;
+
+  case "ds":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { ds: parseInt(e.value, 16) });
+    break;
+
+  case "es":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { es: parseInt(e.value, 16) });
+    break;
+
+  case "ss":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { ss: parseInt(e.value, 16) });
+    break;
+
+  case "ip":
+    emulator.state.registers = Object.assign({}, emulator.state.registers, { ip: parseInt(e.value, 16) });
+    break;
+  }
+
+  updateDisplay();
+}
+
 function updateMemoryBase(a: number): void {
   if (a < 0x00000) a = 0x00000;
   if (a > 0xfff00) a = 0xfff00;
@@ -431,6 +496,20 @@ emulator.io.writes = w86.HEAPU8.subarray(emulator.state.io.writes, emulator.stat
     updateDisplay();
   });
 });
+
+(<Element> emulator.ui.elements.namedItem("ax")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("bx")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("cx")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("dx")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("si")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("di")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("sp")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("bp")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("cs")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("ds")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("es")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("ss")).addEventListener("change", updateRegister);
+(<Element> emulator.ui.elements.namedItem("ip")).addEventListener("change", updateRegister);
 
 (<Element> emulator.ui.elements.namedItem("memory-base")).addEventListener("change", (event: Event): void => {
   const e: HTMLInputElement = <HTMLInputElement> event.currentTarget;

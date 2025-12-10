@@ -438,14 +438,14 @@ function restartEmulator(): void {
   byte.required = true;
   byte.size = 2;
   byte.maxLength = 2;
-  byte.pattern = "[\dA-Fa-f]*";
+  byte.pattern = "[\\dA-Fa-f]*";
   byte.placeholder = "00";
   byte.value = "00";
   for (let i: number = 0; i < 16; i++) {
     for (let j: number = 0; j < 16; j++) {
       const cell: Node = document.createElement("td");
       cell.appendChild(byte.cloneNode());
-      rows.item(i)?.appendChild(cell.cloneNode(true));
+      rows.item(i)?.appendChild(cell);
     }
   }
 }
@@ -454,19 +454,31 @@ function restartEmulator(): void {
   const rows: NodeList = document.getElementById("io-reads-view")!.querySelectorAll("tbody tr");
   const byte: HTMLInputElement = document.createElement("input");
   byte.type = "text";
-  byte.disabled = true;
   byte.autocomplete = "off";
   byte.required = true;
   byte.size = 2;
   byte.maxLength = 2;
-  byte.pattern = "[\dA-Fa-f]*";
+  byte.pattern = "[\\dA-Fa-f]*";
   byte.placeholder = "00";
   byte.value = "00";
   for (let i: number = 0; i < 16; i++) {
     for (let j: number = 0; j < 16; j++) {
+      const newByte: Node = byte.cloneNode();
+      newByte.addEventListener("change", (event: Event): void => {
+        const e: HTMLInputElement = <HTMLInputElement> event.currentTarget;
+        if (!e.checkValidity()) {
+          updateDisplay();
+          return;
+        }
+
+        emulator.io.reads[emulator.base.io.reads + i * 16 + j] = parseInt(e.value, 16);
+
+        updateDisplay();
+      });
+
       const cell: Node = document.createElement("td");
-      cell.appendChild(byte.cloneNode());
-      rows.item(i)?.appendChild(cell.cloneNode(true));
+      cell.appendChild(newByte);
+      rows.item(i)?.appendChild(cell);
     }
   }
 }
@@ -480,14 +492,14 @@ function restartEmulator(): void {
   byte.required = true;
   byte.size = 2;
   byte.maxLength = 2;
-  byte.pattern = "[\dA-Fa-f]*";
+  byte.pattern = "[\\dA-Fa-f]*";
   byte.placeholder = "00";
   byte.value = "00";
   for (let i: number = 0; i < 16; i++) {
     for (let j: number = 0; j < 16; j++) {
       const cell: Node = document.createElement("td");
       cell.appendChild(byte.cloneNode());
-      rows.item(i)?.appendChild(cell.cloneNode(true));
+      rows.item(i)?.appendChild(cell);
     }
   }
 }
@@ -571,7 +583,9 @@ emulator.io.writes = w86.HEAPU8.subarray(emulator.state.io.writes, emulator.stat
 });
 
 (<Element> emulator.ui.elements.namedItem("example")).addEventListener("change", (event: Event): void => {
-  fetch(`test/${(<HTMLSelectElement> event.currentTarget).value}.bin`).then((res: Response): void => {
+  const e: HTMLSelectElement = <HTMLSelectElement> event.currentTarget;
+  if (!e.value) return;
+  fetch(`test/${e.value}.bin`).then((res: Response): void => {
     if (!res.ok) throw new Error(`Got ${res.status} ${res.statusText} when requesting ${res.url}`);
     res.arrayBuffer().then((buf: ArrayBuffer): void => {
       emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));

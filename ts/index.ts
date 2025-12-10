@@ -396,6 +396,24 @@ function restartEmulator(): void {
   emulator.io.writes.fill(0);
 }
 
+function reloadEmulator(): Promise<void> {
+  const example: HTMLSelectElement = <HTMLSelectElement> emulator.ui.elements.namedItem("example");
+  if (example.value) {
+    return fetch(`test/${example.value}.bin`).then((res: Response): Promise<void> => {
+      if (!res.ok) throw new Error(`Got ${res.status} ${res.statusText} when requesting ${res.url}`);
+      return res.arrayBuffer().then((buf: ArrayBuffer): void => {
+        emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
+        restartEmulator();
+      });
+    });
+  } else {
+    return (<HTMLInputElement> emulator.ui.elements.namedItem("rom")).files?.item(0)?.arrayBuffer().then((buf: ArrayBuffer): void => {
+      emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
+      restartEmulator();
+    })!;
+  }
+}
+
 {
   const rows: NodeList = document.getElementById("memory-view")!.querySelectorAll("tbody tr");
   const byte: HTMLInputElement = document.createElement("input");
@@ -433,7 +451,6 @@ function restartEmulator(): void {
   const rows: NodeList = document.getElementById("program-view")!.querySelectorAll("tbody tr");
   const byte: HTMLInputElement = document.createElement("input");
   byte.type = "text";
-  byte.disabled = true;
   byte.autocomplete = "off";
   byte.required = true;
   byte.size = 2;
@@ -443,8 +460,22 @@ function restartEmulator(): void {
   byte.value = "00";
   for (let i: number = 0; i < 16; i++) {
     for (let j: number = 0; j < 16; j++) {
+      const newByte: Node = byte.cloneNode();
+      newByte.addEventListener("change", (event: Event): void => {
+        const e: HTMLInputElement = <HTMLInputElement> event.currentTarget;
+        if (!e.checkValidity()) {
+          updateDisplay();
+          return;
+        }
+
+        emulator.program[emulator.base.program + i * 16 + j] = parseInt(e.value, 16);
+
+        restartEmulator();
+        updateDisplay();
+      });
+
       const cell: Node = document.createElement("td");
-      cell.appendChild(byte.cloneNode());
+      cell.appendChild(newByte);
       rows.item(i)?.appendChild(cell);
     }
   }
@@ -582,24 +613,21 @@ emulator.io.writes = w86.HEAPU8.subarray(emulator.state.io.writes, emulator.stat
   updateDisplay();
 });
 
-(<Element> emulator.ui.elements.namedItem("example")).addEventListener("change", (event: Event): void => {
-  const e: HTMLSelectElement = <HTMLSelectElement> event.currentTarget;
-  if (!e.value) return;
-  fetch(`test/${e.value}.bin`).then((res: Response): void => {
-    if (!res.ok) throw new Error(`Got ${res.status} ${res.statusText} when requesting ${res.url}`);
-    res.arrayBuffer().then((buf: ArrayBuffer): void => {
-      emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
-      restartEmulator();
-      updateDisplay();
-    });
+(<Element> emulator.ui.elements.namedItem("reload")).addEventListener("click", (): void => {
+  reloadEmulator().then((): void => {
+    updateDisplay();
   });
 });
 
-(<Element> emulator.ui.elements.namedItem("rom")).addEventListener("change", (event: Event): void => {
-  (<HTMLInputElement> event.currentTarget).files?.item(0)?.arrayBuffer().then((buf: ArrayBuffer): void => {
-    (<HTMLSelectElement> emulator.ui.elements.namedItem("example")).value = "";
-    emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
-    restartEmulator();
+(<Element> emulator.ui.elements.namedItem("example")).addEventListener("change", (): void => {
+  reloadEmulator().then((): void => {
+    updateDisplay();
+  });
+});
+
+(<Element> emulator.ui.elements.namedItem("rom")).addEventListener("change", (): void => {
+  (<HTMLSelectElement> emulator.ui.elements.namedItem("example")).value = "";
+  reloadEmulator().then((): void => {
     updateDisplay();
   });
 });

@@ -315,6 +315,25 @@ function restartEmulator() {
     emulator.io.reads.fill(0);
     emulator.io.writes.fill(0);
 }
+function reloadEmulator() {
+    const example = emulator.ui.elements.namedItem("example");
+    if (example.value) {
+        return fetch(`test/${example.value}.bin`).then((res) => {
+            if (!res.ok)
+                throw new Error(`Got ${res.status} ${res.statusText} when requesting ${res.url}`);
+            return res.arrayBuffer().then((buf) => {
+                emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
+                restartEmulator();
+            });
+        });
+    }
+    else {
+        return emulator.ui.elements.namedItem("rom").files?.item(0)?.arrayBuffer().then((buf) => {
+            emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
+            restartEmulator();
+        });
+    }
+}
 {
     const rows = document.getElementById("memory-view").querySelectorAll("tbody tr");
     const byte = document.createElement("input");
@@ -348,19 +367,29 @@ function restartEmulator() {
     const rows = document.getElementById("program-view").querySelectorAll("tbody tr");
     const byte = document.createElement("input");
     byte.type = "text";
-    byte.disabled = true;
     byte.autocomplete = "off";
     byte.required = true;
     byte.size = 2;
     byte.maxLength = 2;
-    byte.pattern = "[\dA-Fa-f]*";
+    byte.pattern = "[\\dA-Fa-f]*";
     byte.placeholder = "00";
     byte.value = "00";
     for (let i = 0; i < 16; i++) {
         for (let j = 0; j < 16; j++) {
+            const newByte = byte.cloneNode();
+            newByte.addEventListener("change", (event) => {
+                const e = event.currentTarget;
+                if (!e.checkValidity()) {
+                    updateDisplay();
+                    return;
+                }
+                emulator.program[emulator.base.program + i * 16 + j] = parseInt(e.value, 16);
+                restartEmulator();
+                updateDisplay();
+            });
             const cell = document.createElement("td");
-            cell.appendChild(byte.cloneNode());
-            rows.item(i)?.appendChild(cell.cloneNode(true));
+            cell.appendChild(newByte);
+            rows.item(i)?.appendChild(cell);
         }
     }
 }
@@ -368,19 +397,28 @@ function restartEmulator() {
     const rows = document.getElementById("io-reads-view").querySelectorAll("tbody tr");
     const byte = document.createElement("input");
     byte.type = "text";
-    byte.disabled = true;
     byte.autocomplete = "off";
     byte.required = true;
     byte.size = 2;
     byte.maxLength = 2;
-    byte.pattern = "[\dA-Fa-f]*";
+    byte.pattern = "[\\dA-Fa-f]*";
     byte.placeholder = "00";
     byte.value = "00";
     for (let i = 0; i < 16; i++) {
         for (let j = 0; j < 16; j++) {
+            const newByte = byte.cloneNode();
+            newByte.addEventListener("change", (event) => {
+                const e = event.currentTarget;
+                if (!e.checkValidity()) {
+                    updateDisplay();
+                    return;
+                }
+                emulator.io.reads[emulator.base.io.reads + i * 16 + j] = parseInt(e.value, 16);
+                updateDisplay();
+            });
             const cell = document.createElement("td");
-            cell.appendChild(byte.cloneNode());
-            rows.item(i)?.appendChild(cell.cloneNode(true));
+            cell.appendChild(newByte);
+            rows.item(i)?.appendChild(cell);
         }
     }
 }
@@ -393,14 +431,14 @@ function restartEmulator() {
     byte.required = true;
     byte.size = 2;
     byte.maxLength = 2;
-    byte.pattern = "[\dA-Fa-f]*";
+    byte.pattern = "[\\dA-Fa-f]*";
     byte.placeholder = "00";
     byte.value = "00";
     for (let i = 0; i < 16; i++) {
         for (let j = 0; j < 16; j++) {
             const cell = document.createElement("td");
             cell.appendChild(byte.cloneNode());
-            rows.item(i)?.appendChild(cell.cloneNode(true));
+            rows.item(i)?.appendChild(cell);
         }
     }
 }
@@ -475,22 +513,19 @@ emulator.ui.elements.namedItem("restart").addEventListener("click", () => {
     restartEmulator();
     updateDisplay();
 });
-emulator.ui.elements.namedItem("example").addEventListener("change", (event) => {
-    fetch(`test/${event.currentTarget.value}.bin`).then((res) => {
-        if (!res.ok)
-            throw new Error(`Got ${res.status} ${res.statusText} when requesting ${res.url}`);
-        res.arrayBuffer().then((buf) => {
-            emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
-            restartEmulator();
-            updateDisplay();
-        });
+emulator.ui.elements.namedItem("reload").addEventListener("click", () => {
+    reloadEmulator().then(() => {
+        updateDisplay();
     });
 });
-emulator.ui.elements.namedItem("rom").addEventListener("change", (event) => {
-    event.currentTarget.files?.item(0)?.arrayBuffer().then((buf) => {
-        emulator.ui.elements.namedItem("example").value = "";
-        emulator.program.fill(0).set(new Uint8Array(buf).subarray(0, emulator.memorySize));
-        restartEmulator();
+emulator.ui.elements.namedItem("example").addEventListener("change", () => {
+    reloadEmulator().then(() => {
+        updateDisplay();
+    });
+});
+emulator.ui.elements.namedItem("rom").addEventListener("change", () => {
+    emulator.ui.elements.namedItem("example").value = "";
+    reloadEmulator().then(() => {
         updateDisplay();
     });
 });

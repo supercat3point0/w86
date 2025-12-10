@@ -1,5 +1,117 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import W86, {} from "./w86.js";
+function modifyRegister(event) {
+    const e = event.currentTarget;
+    if (!e.checkValidity()) {
+        updateDisplay();
+        return;
+    }
+    // we have to do it like this because value_objects are immutable
+    switch (e.name) {
+        case "ax":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { ax: parseInt(e.value, 16) });
+            break;
+        case "bx":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { bx: parseInt(e.value, 16) });
+            break;
+        case "cx":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { cx: parseInt(e.value, 16) });
+            break;
+        case "dx":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { dx: parseInt(e.value, 16) });
+            break;
+        case "si":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { si: parseInt(e.value, 16) });
+            break;
+        case "di":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { di: parseInt(e.value, 16) });
+            break;
+        case "sp":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { sp: parseInt(e.value, 16) });
+            break;
+        case "bp":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { bp: parseInt(e.value, 16) });
+            break;
+        case "cs":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { cs: parseInt(e.value, 16) });
+            break;
+        case "ds":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { ds: parseInt(e.value, 16) });
+            break;
+        case "es":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { es: parseInt(e.value, 16) });
+            break;
+        case "ss":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { ss: parseInt(e.value, 16) });
+            break;
+        case "ip":
+            emulator.state.registers = Object.assign({}, emulator.state.registers, { ip: parseInt(e.value, 16) });
+    }
+    updateDisplay();
+}
+function modifyFlags(event) {
+    const e = event.currentTarget;
+    let shift;
+    switch (e.name) {
+        case "flags0":
+            shift = 0;
+            break;
+        case "flags1":
+            shift = 1;
+            break;
+        case "flags2":
+            shift = 2;
+            break;
+        case "flags3":
+            shift = 3;
+            break;
+        case "flags4":
+            shift = 4;
+            break;
+        case "flags5":
+            shift = 5;
+            break;
+        case "flags6":
+            shift = 6;
+            break;
+        case "flags7":
+            shift = 7;
+            break;
+        case "flags8":
+            shift = 8;
+            break;
+        case "flags9":
+            shift = 9;
+            break;
+        case "flags10":
+            shift = 10;
+            break;
+        case "flags11":
+            shift = 11;
+            break;
+        case "flags12":
+            shift = 12;
+            break;
+        case "flags13":
+            shift = 13;
+            break;
+        case "flags14":
+            shift = 14;
+            break;
+        case "flags15":
+            shift = 15;
+            break;
+        default:
+            return;
+    }
+    if (e.checked) {
+        emulator.state.registers = Object.assign({}, emulator.state.registers, { flags: emulator.state.registers.flags | 1 << shift });
+    }
+    else {
+        emulator.state.registers = Object.assign({}, emulator.state.registers, { flags: emulator.state.registers.flags & ~(1 << shift) });
+    }
+    updateDisplay();
+}
 function updateMemoryBase(a) {
     if (a < 0x00000)
         a = 0x00000;
@@ -207,19 +319,28 @@ function restartEmulator() {
     const rows = document.getElementById("memory-view").querySelectorAll("tbody tr");
     const byte = document.createElement("input");
     byte.type = "text";
-    byte.disabled = true;
     byte.autocomplete = "off";
     byte.required = true;
     byte.size = 2;
     byte.maxLength = 2;
-    byte.pattern = "[\dA-Fa-f]*";
+    byte.pattern = "[\\dA-Fa-f]*";
     byte.placeholder = "00";
     byte.value = "00";
-    const cell = document.createElement("td");
-    cell.appendChild(byte);
-    for (const row of rows) {
-        for (let i = 0; i < 16; i++) {
-            row.appendChild(cell.cloneNode(true));
+    for (let i = 0; i < 16; i++) {
+        for (let j = 0; j < 16; j++) {
+            const newByte = byte.cloneNode();
+            newByte.addEventListener("change", (event) => {
+                const e = event.currentTarget;
+                if (!e.checkValidity()) {
+                    updateDisplay();
+                    return;
+                }
+                emulator.memory[emulator.base.memory + i * 16 + j] = parseInt(e.value, 16);
+                updateDisplay();
+            });
+            const cell = document.createElement("td");
+            cell.appendChild(newByte);
+            rows.item(i)?.appendChild(cell);
         }
     }
 }
@@ -235,11 +356,11 @@ function restartEmulator() {
     byte.pattern = "[\dA-Fa-f]*";
     byte.placeholder = "00";
     byte.value = "00";
-    const cell = document.createElement("td");
-    cell.appendChild(byte);
-    for (const row of rows) {
-        for (let i = 0; i < 16; i++) {
-            row.appendChild(cell.cloneNode(true));
+    for (let i = 0; i < 16; i++) {
+        for (let j = 0; j < 16; j++) {
+            const cell = document.createElement("td");
+            cell.appendChild(byte.cloneNode());
+            rows.item(i)?.appendChild(cell.cloneNode(true));
         }
     }
 }
@@ -255,11 +376,11 @@ function restartEmulator() {
     byte.pattern = "[\dA-Fa-f]*";
     byte.placeholder = "00";
     byte.value = "00";
-    const cell = document.createElement("td");
-    cell.appendChild(byte);
-    for (const row of rows) {
-        for (let i = 0; i < 16; i++) {
-            row.appendChild(cell.cloneNode(true));
+    for (let i = 0; i < 16; i++) {
+        for (let j = 0; j < 16; j++) {
+            const cell = document.createElement("td");
+            cell.appendChild(byte.cloneNode());
+            rows.item(i)?.appendChild(cell.cloneNode(true));
         }
     }
 }
@@ -275,11 +396,11 @@ function restartEmulator() {
     byte.pattern = "[\dA-Fa-f]*";
     byte.placeholder = "00";
     byte.value = "00";
-    const cell = document.createElement("td");
-    cell.appendChild(byte);
-    for (const row of rows) {
-        for (let i = 0; i < 16; i++) {
-            row.appendChild(cell.cloneNode(true));
+    for (let i = 0; i < 16; i++) {
+        for (let j = 0; j < 16; j++) {
+            const cell = document.createElement("td");
+            cell.appendChild(byte.cloneNode());
+            rows.item(i)?.appendChild(cell.cloneNode(true));
         }
     }
 }
@@ -373,6 +494,35 @@ emulator.ui.elements.namedItem("rom").addEventListener("change", (event) => {
         updateDisplay();
     });
 });
+emulator.ui.elements.namedItem("ax").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("bx").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("cx").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("dx").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("si").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("di").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("sp").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("bp").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("cs").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("ds").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("es").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("ss").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("ip").addEventListener("change", modifyRegister);
+emulator.ui.elements.namedItem("flags0").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags1").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags2").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags3").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags4").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags5").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags6").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags7").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags8").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags9").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags10").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags11").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags12").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags13").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags14").addEventListener("change", modifyFlags);
+emulator.ui.elements.namedItem("flags15").addEventListener("change", modifyFlags);
 emulator.ui.elements.namedItem("memory-base").addEventListener("change", (event) => {
     const e = event.currentTarget;
     let a;
